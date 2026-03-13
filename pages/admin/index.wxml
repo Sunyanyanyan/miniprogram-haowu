@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="stats-section">
+    <view class="stat-item">
+      <text class="stat-num">{{stats.total}}</text>
+      <text class="stat-label">总数</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num on">{{stats.on}}</text>
+      <text class="stat-label">在架</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num off">{{stats.off}}</text>
+      <text class="stat-label">下架</text>
+    </view>
+  </view>
+
+  <view class="items-section">
+    <view class="section-title">所有物品</view>
+
+    <view class="item-list">
+      <view class="item-card" wx:for="{{items}}" wx:key="_id">
+        <view class="item-main">
+          <image class="item-image" src="{{item.images[0]}}" mode="aspectFill"></image>
+          <view class="item-info">
+            <text class="item-title">{{item.title}}</text>
+            <text class="item-time">{{item.createdAt}}</text>
+            <text class="item-status {{item.status === 'on' ? 'on' : 'off'}}">
+              {{item.status === 'on' ? '在架' : '已下架'}}
+            </text>
+          </view>
+        </view>
+        <view class="item-actions">
+          <view 
+            class="action-btn" 
+            data-id="{{item._id}}" 
+            data-status="{{item.status}}"
+            bindtap="toggleStatus"
+          >
+            {{item.status === 'on' ? '下架' : '上架'}}
+          </view>
+          <view class="action-btn delete" data-id="{{item._id}}" bindtap="deleteItem">
+            删除
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{!loading && items.length === 0}}">
+      <text class="empty-text">暂无物品</text>
+    </view>
+  </view>
+</view>

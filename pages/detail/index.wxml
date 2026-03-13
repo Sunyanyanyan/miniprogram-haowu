@@ -1,0 +1,62 @@
+<view class="container" wx:if="{{!loading && item}}">
+  <swiper class="image-swiper" indicator-dots="{{item.images.length > 1}}">
+    <swiper-item wx:for="{{item.images}}" wx:key="*this">
+      <image 
+        class="detail-image" 
+        src="{{item}}" 
+        mode="aspectFill"
+        data-url="{{item}}"
+        bindtap="previewImage"
+      ></image>
+    </swiper-item>
+  </swiper>
+
+  <view class="info-section">
+    <view class="title">{{item.title}}</view>
+    <view class="time">发布时间：{{item.createdAt}}</view>
+    <view class="status {{item.status === 'on' ? 'on' : 'off'}}">
+      {{item.status === 'on' ? '在架' : '已下架'}}
+    </view>
+  </view>
+
+  <view class="desc-section">
+    <view class="section-title">详细描述</view>
+    <text class="desc-text">{{item.desc}}</text>
+  </view>
+
+  <view class="contact-section">
+    <view class="section-title">联系方式</view>
+    <view wx:if="{{!showContact}}" class="contact-hidden" bindtap="showContact">
+      <text>点击查看联系方式</text>
+    </view>
+    <view wx:else class="contact-show">
+      <view class="contact-info">
+        <text class="contact-text">{{item.contact}}</text>
+      </view>
+      <view class="contact-actions">
+        <button class="contact-btn copy-btn" bindtap="copyContact">
+          <text>复制</text>
+        </button>
+        <button class="contact-btn call-btn" bindtap="callPhone">
+          <text>拨号</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <view class="actions" wx:if="{{fromMine && isOwner}}">
+    <button class="action-btn edit-btn" bindtap="goToEdit">编辑</button>
+    <button class="action-btn {{item.status === 'on' ? 'off-btn' : 'on-btn'}}" bindtap="toggleStatus">
+      {{item.status === 'on' ? '下架' : '上架'}}
+    </button>
+    <button class="action-btn delete-btn" bindtap="deleteItem">删除</button>
+  </view>
+
+  <view class="actions" wx:if="{{!fromMine}}">
+    <button class="action-btn report-btn" bindtap="report">举报</button>
+  </view>
+</view>
+
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>

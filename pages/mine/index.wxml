@@ -1,0 +1,59 @@
+<view class="container">
+  <view class="user-section" wx:if="{{hasUserInfo}}">
+    <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
+    <text class="nickname">{{userInfo.nickName}}</text>
+  </view>
+
+  <view class="login-section" wx:else>
+    <button class="login-btn" bindtap="getUserProfile">登录</button>
+  </view>
+
+  <view class="items-section" wx:if="{{hasUserInfo}}">
+    <view class="section-title">我的发布</view>
+
+    <view class="item-list">
+      <view class="item-card" wx:for="{{myItems}}" wx:key="_id">
+        <view class="item-main">
+          <image class="item-image" src="{{item.images[0]}}" mode="aspectFill"></image>
+          <view class="item-info">
+            <text class="item-title">{{item.title}}</text>
+            <text class="item-time">发布：{{item.createdAt}}</text>
+            <text class="item-time" wx:if="{{item.updatedAt}}">更新：{{item.updatedAt}}</text>
+            <view class="item-status {{item.status === 'on' ? 'on' : 'off'}}">
+              <text>{{item.status === 'on' ? '在架' : '已下架'}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="item-actions">
+          <view 
+            class="action-btn edit" 
+            data-id="{{item._id}}" 
+            bindtap="goToEdit"
+          >
+            编辑
+          </view>
+          <view 
+            class="action-btn {{item.status === 'on' ? 'off-btn' : 'on-btn'}}" 
+            data-id="{{item._id}}" 
+            data-status="{{item.status}}"
+            bindtap="toggleStatus"
+          >
+            {{item.status === 'on' ? '下架' : '上架'}}
+          </view>
+          <view class="action-btn delete" data-id="{{item._id}}" bindtap="deleteItem">
+            删除
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{!loading && myItems.length === 0}}">
+      <text class="empty-text">暂无发布</text>
+      <text class="empty-tip">快去发布你的闲置物品吧</text>
+    </view>
+  </view>
+
+  <view class="version" bindtap="onVersionTap">
+    <text>版本 1.0.0</text>
+  </view>
+</view>

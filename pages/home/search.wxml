@@ -1,0 +1,38 @@
+<view class="container">
+  <view class="search-bar">
+    <input 
+      class="search-input" 
+      placeholder="搜索闲置物品" 
+      value="{{keyword}}"
+      bindinput="onInput"
+      bindconfirm="onSearch"
+    />
+    <view class="clear-btn" wx:if="{{keyword}}" bindtap="clearKeyword">×</view>
+    <button class="search-btn" bindtap="onSearch">搜索</button>
+  </view>
+
+  <view class="items-grid" wx:if="{{items.length > 0}}">
+    <view 
+      class="item-card" 
+      wx:for="{{items}}" 
+      wx:key="_id"
+      data-id="{{item._id}}"
+      bindtap="goToDetail"
+    >
+      <image class="item-image" src="{{item.images[0]}}" mode="aspectFill"></image>
+      <view class="item-info">
+        <text class="item-title">{{item.title}}</text>
+        <text class="item-time">{{item.createdAt}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>搜索中...</text>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && searched && items.length === 0}}">
+    <text class="empty-text">未找到相关物品</text>
+    <text class="empty-tip">换个关键词试试吧</text>
+  </view>
+</view>

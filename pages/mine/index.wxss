@@ -1,0 +1,175 @@
+.container {
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.user-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar{
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  margin-bottom: 20rpx;
+}
+
+.nickname {
+  font-size: 32rpx;
+  color: #333;
+}
+
+.login-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 60rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.login-btn {
+  background-color: #FF6B35;
+  color: #fff;
+  border-radius: 40rpx;
+  padding: 20rpx 60rpx;
+}
+
+.items-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.item-card {
+  border-bottom: 2rpx solid #f5f5f5;
+  padding: 20rpx 0;
+}
+
+.item-main {
+  display: flex;
+  align-items: center;
+}
+
+.item-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 8rpx;
+  margin-right: 20rpx;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-title {
+  font-size: 28rpx;
+  color: #333;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-bottom: 10rpx;
+}
+
+.item-time {
+  font-size: 22rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 6rpx;
+}
+
+.item-status{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 6rpx;
+  min-width: 80rpx;
+  height: 40rpx;
+}
+
+.item-status.on{
+  background-color: #e8f5e9;
+  color: #4caf50;
+}
+
+.item-status.off {
+  background-color: #ffebee;
+  color: #f44336;
+}
+
+.item-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 20rpx;
+  margin-top: 10rpx;
+}
+
+.action-btn {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 4rpx;
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.action-btn.edit {
+  background-color: #e3f2fd;
+  color: #2196f3;
+}
+
+.action-btn.on-btn {
+  background-color: #e8f5e9;
+  color: #4caf50;
+}
+
+.action-btn.off-btn {
+  background-color: #fff3e0;
+  color: #ff9800;
+}
+
+.action-btn.delete{
+  background-color: #ffebee;
+  color: #f44336;
+}
+
+.empty{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0;
+}
+
+.empty-text{
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.empty-tip{
+  font-size: 24rpx;
+  color: #999;
+}
+
+.version{
+  text-align: center;
+  padding: 40rpx 0;
+  color: #999;
+  font-size: 24rpx;
+}
