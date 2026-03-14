@@ -32,8 +32,25 @@ Page({
         }
       });
 
+      const items = res.result.data || [];
+      const formattedItems = [];
+      
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.title.indexOf(this.data.keyword) >= 0 || 
+            (item.desc && item.desc.indexOf(this.data.keyword) >= 0)) {
+          formattedItems.push({
+            _id: item._id,
+            title: item.title,
+            desc: item.desc,
+            images: item.images,
+            createdAt: this.formatDate(item.createdAt)
+          });
+        }
+      }
+
       this.setData({
-        items: res.result.data || [],
+        items: formattedItems,
         loading: false
       });
     } catch (err) {
@@ -46,10 +63,21 @@ Page({
     }
   },
 
+  formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hour = String(d.getHours()).padStart(2, '0');
+    const minute = String(d.getMinutes()).padStart(2, '0');
+    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute;
+  },
+
   goToDetail(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({
-      url: `/pages/detail/index?id=${id}`
+      url: '/pages/detail/index?id=' + id
     });
   },
 

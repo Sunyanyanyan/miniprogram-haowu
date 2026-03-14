@@ -1,9 +1,15 @@
+const tags = ['家用电器', '电子数码', '家居用品', '宠物用品', '运动器材', '图书音像', '厨房用品', '服装鞋帽', '美妆个护', '票务卡券', '食品饮料', '珠宝配饰', '其他'];
+
 Page({
   data: {
     images: [],
     title: '',
     desc: '',
     contact: '',
+    tag: '',
+    tagIndex: -1,
+    tags: tags,
+    value: '',
     submitting: false,
     isFirstShow: true
   },
@@ -25,8 +31,44 @@ Page({
       title: '',
       desc: '',
       contact: '',
+      tag: '',
+      tagIndex: -1,
+      value: '',
       submitting: false
     });
+  },
+
+  onTagChange(e) {
+    const index = e.detail.value;
+    this.setData({
+      tagIndex: index,
+      tag: tags[index]
+    });
+  },
+
+  onTitleInput(e) {
+    this.setData({ title: e.detail.value });
+  },
+
+  onValueInput(e) {
+    let value = e.detail.value;
+    value = value.replace(/[^\d.]/g, '');
+    let parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (parts.length === 2 && parts[1].length > 2) {
+      value = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    this.setData({ value: value });
+  },
+
+  onDescInput(e) {
+    this.setData({ desc: e.detail.value });
+  },
+
+  onContactInput(e) {
+    this.setData({ contact: e.detail.value });
   },
 
   chooseImage() {
@@ -117,21 +159,38 @@ Page({
     this.setData({ images: images });
   },
 
-  onTitleInput(e) {
-    this.setData({ title: e.detail.value });
-  },
-
-  onDescInput(e) {
-    this.setData({ desc: e.detail.value });
-  },
-
-  onContactInput(e) {
-    this.setData({ contact: e.detail.value });
+  validateValue(value) {
+    if (!value || value === '') {
+      return { valid: false, message: '请输入好物值' };
+    }
+    
+    const num = parseFloat(value);
+    if (isNaN(num) || num <= 0) {
+      return { valid: false, message: '好物值必须大于0' };
+    }
+    
+    const decimalPart = value.split('.')[1];
+    if (decimalPart && decimalPart.length > 2) {
+      return { valid: false, message: '好物值最多两位小数' };
+    }
+    
+    return { valid: true, value: num };
   },
 
   submit() {
+    if (this.data.tagIndex < 0) {
+      wx.showToast({ title: '请选择标签', icon: 'none', duration: 2000 });
+      return;
+    }
+
     if (!this.data.title.trim()) {
       wx.showToast({ title: '请输入标题', icon: 'none', duration: 2000 });
+      return;
+    }
+
+    const valueResult = this.validateValue(this.data.value);
+    if (!valueResult.valid) {
+      wx.showToast({ title: valueResult.message, icon: 'none', duration: 2000 });
       return;
     }
 
@@ -141,7 +200,7 @@ Page({
     }
 
     if (!this.data.contact.trim()) {
-      wx.showToast({ title: '请输入联系方式', icon: 'none', duration: 2000 });
+      wx.showToast({ title: '请输入联系信息', icon: 'none', duration: 2000 });
       return;
     }
 
@@ -151,7 +210,7 @@ Page({
     }
 
     this.setData({ submitting: true });
-    wx.showLoading({ title: '发布中...' });
+    wx.showLoading({ title: '登记中...' });
 
     const that = this;
     wx.cloud.callFunction({
@@ -161,7 +220,9 @@ Page({
         title: this.data.title,
         desc: this.data.desc,
         contact: this.data.contact,
-        images: this.data.images
+        images: this.data.images,
+        tag: this.data.tag,
+        value: valueResult.value
       },
       success: function(res) {
         wx.hideLoading();
@@ -169,7 +230,7 @@ Page({
         
         if (res.result && res.result.errCode === 0) {
           wx.showToast({
-            title: '发布成功',
+            title: '登记成功',
             icon: 'success'
           });
 
@@ -179,7 +240,7 @@ Page({
             wx.switchTab({ url: '/pages/home/index' });
           }, 1500);
         } else {
-          const errorMsg = (res.result && res.result.errMsg) || '发布失败';
+          const errorMsg = (res.result && res.result.errMsg) || '登记失败';
           wx.showToast({
             title: errorMsg,
             icon: 'none',
@@ -188,11 +249,11 @@ Page({
         }
       },
       fail: function(err) {
-        console.error('发布失败', err);
+        console.error('登记失败', err);
         wx.hideLoading();
         that.setData({ submitting: false });
         
-        let errorMsg = '发布失败';
+        let errorMsg = '登记失败';
         if (err.errMsg && err.errMsg.indexOf('FunctionName') >= 0) {
           errorMsg = '云函数未部署';
         } else if (err.errMsg && err.errMsg.indexOf('env not exists') >= 0) {

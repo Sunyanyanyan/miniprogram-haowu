@@ -1,13 +1,17 @@
 <view class="container">
-  <view class="search-bar">
-    <input 
-      class="search-input" 
-      placeholder="搜索闲置物品" 
-      value="{{keyword}}"
-      bindinput="onInput"
-      bindconfirm="onSearch"
-    />
-    <view class="clear-btn" wx:if="{{keyword}}" bindtap="clearKeyword">×</view>
+  <view class="search-section">
+    <view class="search-input-wrap">
+      <input 
+        class="search-input" 
+        placeholder="搜索闲置好物" 
+        value="{{keyword}}"
+        bindinput="onInput"
+        bindconfirm="onSearch"
+        confirm-type="search"
+        focus="{{true}}"
+      />
+      <view class="clear-btn" wx:if="{{keyword}}" bindtap="clearKeyword">×</view>
+    </view>
     <button class="search-btn" bindtap="onSearch">搜索</button>
   </view>
 
@@ -27,12 +31,11 @@
     </view>
   </view>
 
-  <view class="loading" wx:if="{{loading}}">
-    <text>搜索中...</text>
+  <view class="empty" wx:if="{{!loading && searched && items.length === 0}}">
+    <text class="empty-text">未找到相关好物</text>
   </view>
 
-  <view class="empty" wx:if="{{!loading && searched && items.length === 0}}">
-    <text class="empty-text">未找到相关物品</text>
-    <text class="empty-tip">换个关键词试试吧</text>
+  <view class="loading" wx:if="{{loading}}">
+    <text>搜索中...</text>
   </view>
 </view>

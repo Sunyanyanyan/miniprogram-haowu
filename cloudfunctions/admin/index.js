@@ -16,6 +16,8 @@ exports.main = async (event, context) => {
       return await checkAdmin(openid);
     case 'getAllItems':
       return await getAllItems(openid);
+    case 'getStats':
+      return await getStats(openid);
     case 'forceUpdateStatus':
       return await forceUpdateStatus(event, openid);
     case 'forceDelete':
@@ -29,6 +31,7 @@ exports.main = async (event, context) => {
 };
 
 async function checkAdmin(openid) {
+  console.log('当前用户 openid:', openid);
   try {
     const result = await db.collection('admins')
       .where({
@@ -38,13 +41,15 @@ async function checkAdmin(openid) {
 
     return {
       errCode: 0,
-      isAdmin: result.total > 0
+      isAdmin: result.total > 0,
+      openid: openid
     };
   } catch (err) {
     console.error('校验管理员失败', err);
     return {
       errCode: -1,
-      isAdmin: false
+      isAdmin: false,
+      openid: openid
     };
   }
 }
@@ -146,6 +151,45 @@ async function forceDelete(event, openid) {
     return {
       errCode: -1,
       errMsg: '删除失败'
+    };
+  }
+}
+
+async function getStats(openid) {
+  try {
+    const isAdmin = await checkAdmin(openid);
+    
+    if (!isAdmin.isAdmin) {
+      return {
+        errCode: -1,
+        errMsg: '无权限'
+      };
+    }
+
+    const itemsResult = await db.collection('items').get();
+    const items = itemsResult.data;
+    
+    const userSet = new Set();
+    for (let i = 0; i < items.length; i++) {
+      if (items[i]._openid) {
+        userSet.add(items[i]._openid);
+      }
+    }
+
+    return {
+      errCode: 0,
+      data: {
+        totalItems: items.length,
+        onItems: items.filter(item => item.status === 'on').length,
+        offItems: items.filter(item => item.status === 'off').length,
+        userCount: userSet.size
+      }
+    };
+  } catch (err) {
+    console.error('统计失败', err);
+    return {
+      errCode: -1,
+      errMsg: '统计失败'
     };
   }
 }

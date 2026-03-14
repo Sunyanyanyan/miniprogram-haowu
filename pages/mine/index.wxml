@@ -1,6 +1,6 @@
 <view class="container">
   <view class="user-section" wx:if="{{hasUserInfo}}">
-    <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
+    <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
     <text class="nickname">{{userInfo.nickName}}</text>
   </view>
 
@@ -9,19 +9,26 @@
   </view>
 
   <view class="items-section" wx:if="{{hasUserInfo}}">
-    <view class="section-title">我的发布</view>
+    <view class="section-title">我的登记</view>
+
+    <view class="tabs">
+      <view class="tab-item {{currentTab === 'on' ? 'active' : ''}}" data-tab="on" bindtap="onTabChange">
+        <text>展示中</text>
+        <text class="tab-count">{{onCount}}</text>
+      </view>
+      <view class="tab-item {{currentTab === 'off' ? 'active' : ''}}" data-tab="off" bindtap="onTabChange">
+        <text>已隐藏</text>
+        <text class="tab-count">{{offCount}}</text>
+      </view>
+    </view>
 
     <view class="item-list">
-      <view class="item-card" wx:for="{{myItems}}" wx:key="_id">
+      <view class="item-card" wx:for="{{filteredItems}}" wx:key="_id">
         <view class="item-main">
           <image class="item-image" src="{{item.images[0]}}" mode="aspectFill"></image>
           <view class="item-info">
             <text class="item-title">{{item.title}}</text>
-            <text class="item-time">发布：{{item.createdAt}}</text>
-            <text class="item-time" wx:if="{{item.updatedAt}}">更新：{{item.updatedAt}}</text>
-            <view class="item-status {{item.status === 'on' ? 'on' : 'off'}}">
-              <text>{{item.status === 'on' ? '在架' : '已下架'}}</text>
-            </view>
+            <text class="item-value" wx:if="{{item.value}}">好物值：{{item.value}}</text>
           </view>
         </view>
         <view class="item-actions">
@@ -38,7 +45,7 @@
             data-status="{{item.status}}"
             bindtap="toggleStatus"
           >
-            {{item.status === 'on' ? '下架' : '上架'}}
+            {{item.status === 'on' ? '隐藏' : '展示'}}
           </view>
           <view class="action-btn delete" data-id="{{item._id}}" bindtap="deleteItem">
             删除
@@ -47,13 +54,16 @@
       </view>
     </view>
 
-    <view class="empty" wx:if="{{!loading && myItems.length === 0}}">
-      <text class="empty-text">暂无发布</text>
-      <text class="empty-tip">快去发布你的闲置物品吧</text>
+    <view class="empty" wx:if="{{!loading && filteredItems.length === 0}}">
+      <text class="empty-text">暂无{{currentTab === 'on' ? '展示中' : '已隐藏'}}的好物</text>
     </view>
   </view>
 
-  <view class="version" bindtap="onVersionTap">
+  <view class="admin-section" wx:if="{{isAdmin}}">
+    <button class="admin-btn" bindtap="goToAdmin">管理后台</button>
+  </view>
+
+  <view class="version">
     <text>版本 1.0.0</text>
   </view>
 </view>

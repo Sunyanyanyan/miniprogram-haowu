@@ -27,6 +27,10 @@ Desktop.ini
 # 隐私配置文件
 project.private.config.json
 
+# 隐私信息文件（包含appid和云环境ID）
+app.js
+project.config.json
+
 # 临时文件
 *.tmp
 *.temp

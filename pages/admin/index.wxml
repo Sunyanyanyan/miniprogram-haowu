@@ -1,21 +1,101 @@
 <view class="container">
   <view class="stats-section">
     <view class="stat-item">
+      <text class="stat-num">{{stats.userCount}}</text>
+      <text class="stat-label">用户数</text>
+    </view>
+    <view class="stat-item">
       <text class="stat-num">{{stats.total}}</text>
-      <text class="stat-label">总数</text>
+      <text class="stat-label">好物总数</text>
     </view>
     <view class="stat-item">
       <text class="stat-num on">{{stats.on}}</text>
-      <text class="stat-label">在架</text>
+      <text class="stat-label">展示中</text>
     </view>
     <view class="stat-item">
       <text class="stat-num off">{{stats.off}}</text>
-      <text class="stat-label">下架</text>
+      <text class="stat-label">已隐藏</text>
+    </view>
+  </view>
+
+  <view class="analytics-section">
+    <view class="section-title">页面浏览统计</view>
+    <view class="analytics-grid">
+      <view class="analytics-item">
+        <text class="analytics-label">首页浏览</text>
+        <text class="analytics-num">{{analytics.pageViews.home || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">登记页浏览</text>
+        <text class="analytics-num">{{analytics.pageViews.publish || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">我的页浏览</text>
+        <text class="analytics-num">{{analytics.pageViews.mine || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">详情页浏览</text>
+        <text class="analytics-num">{{analytics.pageViews.detail || 0}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="analytics-section">
+    <view class="section-title">用户行为统计</view>
+    <view class="analytics-grid">
+      <view class="analytics-item">
+        <text class="analytics-label">登录点击</text>
+        <text class="analytics-num">{{analytics.clicks['mine_login'] || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">登记提交</text>
+        <text class="analytics-num">{{analytics.clicks['publish_submit'] || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">上传图片</text>
+        <text class="analytics-num">{{analytics.clicks['publish_chooseImage'] || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">编辑好物</text>
+        <text class="analytics-num">{{analytics.clicks['mine_edit'] || 0}}</text>
+      </view>
+    </view>
+    <view class="analytics-grid">
+      <view class="analytics-item">
+        <text class="analytics-label">查看联系</text>
+        <text class="analytics-num">{{analytics.clicks['detail_showContact'] || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">复制联系</text>
+        <text class="analytics-num">{{analytics.clicks['detail_copyContact'] || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">拨打电话</text>
+        <text class="analytics-num">{{analytics.clicks['detail_callPhone'] || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">反馈好物</text>
+        <text class="analytics-num">{{analytics.clicks['detail_report'] || 0}}</text>
+      </view>
+    </view>
+    <view class="analytics-grid">
+      <view class="analytics-item">
+        <text class="analytics-label">下拉刷新</text>
+        <text class="analytics-num">{{analytics.clicks['home_pullDownRefresh'] || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">上拉加载</text>
+        <text class="analytics-num">{{analytics.clicks['home_loadMore'] || 0}}</text>
+      </view>
+      <view class="analytics-item">
+        <text class="analytics-label">图片预览</text>
+        <text class="analytics-num">{{analytics.clicks['detail_previewImage'] || 0}}</text>
+      </view>
     </view>
   </view>
 
   <view class="items-section">
-    <view class="section-title">所有物品</view>
+    <view class="section-title">所有好物</view>
 
     <view class="item-list">
       <view class="item-card" wx:for="{{items}}" wx:key="_id">
@@ -25,7 +105,7 @@
             <text class="item-title">{{item.title}}</text>
             <text class="item-time">{{item.createdAt}}</text>
             <text class="item-status {{item.status === 'on' ? 'on' : 'off'}}">
-              {{item.status === 'on' ? '在架' : '已下架'}}
+              {{item.status === 'on' ? '展示中' : '已隐藏'}}
             </text>
           </view>
         </view>
@@ -36,7 +116,7 @@
             data-status="{{item.status}}"
             bindtap="toggleStatus"
           >
-            {{item.status === 'on' ? '下架' : '上架'}}
+            {{item.status === 'on' ? '隐藏' : '展示'}}
           </view>
           <view class="action-btn delete" data-id="{{item._id}}" bindtap="deleteItem">
             删除
@@ -46,7 +126,7 @@
     </view>
 
     <view class="empty" wx:if="{{!loading && items.length === 0}}">
-      <text class="empty-text">暂无物品</text>
+      <text class="empty-text">暂无好物</text>
     </view>
   </view>
 </view>

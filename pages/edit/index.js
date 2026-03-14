@@ -1,3 +1,5 @@
+const tagOptions = ['家用电器', '电子数码', '家居用品', '宠物用品', '运动器材', '图书音像', '厨房用品', '服装鞋帽', '美妆个护', '票务卡券', '食品饮料', '珠宝配饰', '其他'];
+
 Page({
   data: {
     itemId: '',
@@ -5,6 +7,10 @@ Page({
     title: '',
     desc: '',
     contact: '',
+    tag: '',
+    tagIndex: -1,
+    tags: tagOptions,
+    value: '',
     submitting: false,
     loading: true
   },
@@ -25,12 +31,16 @@ Page({
       });
 
       const item = res.result.data;
+      const tagIndex = tagOptions.indexOf(item.tag);
       
       this.setData({
         images: item.images || [],
         title: item.title || '',
         desc: item.desc || '',
         contact: item.contact || '',
+        tag: item.tag || '',
+        tagIndex: tagIndex >= 0 ? tagIndex : -1,
+        value: item.value ? String(item.value) : '',
         loading: false
       });
     } catch (err) {
@@ -39,6 +49,16 @@ Page({
       wx.showToast({
         title: '加载失败',
         icon: 'none'
+      });
+    }
+  },
+
+  onTagChange(e) {
+    const index = parseInt(e.detail.value);
+    if (index >= 0 && index < tagOptions.length) {
+      this.setData({
+        tagIndex: index,
+        tag: tagOptions[index]
       });
     }
   },
@@ -134,6 +154,19 @@ Page({
     this.setData({ title: e.detail.value });
   },
 
+  onValueInput(e) {
+    let value = e.detail.value;
+    value = value.replace(/[^\d.]/g, '');
+    let parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (parts.length === 2 && parts[1].length > 2) {
+      value = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    this.setData({ value: value });
+  },
+
   onDescInput(e) {
     this.setData({ desc: e.detail.value });
   },
@@ -142,13 +175,42 @@ Page({
     this.setData({ contact: e.detail.value });
   },
 
+  validateValue(value) {
+    if (!value || value === '') {
+      return { valid: false, message: '请输入好物值' };
+    }
+    
+    const num = parseFloat(value);
+    if (isNaN(num) || num <= 0) {
+      return { valid: false, message: '好物值必须大于0' };
+    }
+    
+    const decimalPart = value.split('.')[1];
+    if (decimalPart && decimalPart.length > 2) {
+      return { valid: false, message: '好物值最多两位小数' };
+    }
+    
+    return { valid: true, value: num };
+  },
+
   cancel() {
     wx.navigateBack();
   },
 
   async submit() {
+    if (this.data.tagIndex < 0) {
+      wx.showToast({ title: '请选择标签', icon: 'none', duration: 2000 });
+      return;
+    }
+
     if (!this.data.title.trim()) {
       wx.showToast({ title: '请输入标题', icon: 'none', duration: 2000 });
+      return;
+    }
+
+    const valueResult = this.validateValue(this.data.value);
+    if (!valueResult.valid) {
+      wx.showToast({ title: valueResult.message, icon: 'none', duration: 2000 });
       return;
     }
 
@@ -158,7 +220,7 @@ Page({
     }
 
     if (!this.data.contact.trim()) {
-      wx.showToast({ title: '请输入联系方式', icon: 'none', duration: 2000 });
+      wx.showToast({ title: '请输入联系信息', icon: 'none', duration: 2000 });
       return;
     }
 
@@ -179,7 +241,9 @@ Page({
           title: this.data.title,
           desc: this.data.desc,
           contact: this.data.contact,
-          images: this.data.images
+          images: this.data.images,
+          tag: this.data.tag,
+          value: valueResult.value
         }
       });
 

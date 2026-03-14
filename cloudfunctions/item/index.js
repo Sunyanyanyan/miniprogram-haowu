@@ -41,6 +41,8 @@ async function createItem(event, openid) {
   const desc = event.desc;
   const contact = event.contact;
   const images = event.images;
+  const tag = event.tag || '其他';
+  const value = event.value || 0;
 
   try {
     const result = await db.collection('items').add({
@@ -50,6 +52,8 @@ async function createItem(event, openid) {
         desc: desc,
         contact: contact,
         images: images,
+        tag: tag,
+        value: value,
         status: 'on',
         createdAt: db.serverDate(),
         updatedAt: db.serverDate()
@@ -74,11 +78,18 @@ async function getItemList(event) {
   const page = event.page || 0;
   const pageSize = event.pageSize || 10;
   const keyword = event.keyword;
+  const tag = event.tag;
 
   try {
-    let query = db.collection('items').where({
+    let condition = {
       status: 'on'
-    });
+    };
+
+    if (tag && tag !== '全部') {
+      condition.tag = tag;
+    }
+
+    let query = db.collection('items').where(condition);
 
     if (keyword) {
       query = query.where({
@@ -159,6 +170,8 @@ async function updateItem(event, openid) {
   const desc = event.desc;
   const contact = event.contact;
   const images = event.images;
+  const tag = event.tag;
+  const value = event.value;
 
   try {
     const item = await db.collection('items').doc(itemId).get();
@@ -170,16 +183,26 @@ async function updateItem(event, openid) {
       };
     }
 
+    const updateData = {
+      title: title,
+      desc: desc,
+      contact: contact,
+      images: images,
+      updatedAt: db.serverDate()
+    };
+
+    if (tag) {
+      updateData.tag = tag;
+    }
+
+    if (value !== undefined) {
+      updateData.value = value;
+    }
+
     const result = await db.collection('items')
       .doc(itemId)
       .update({
-        data: {
-          title: title,
-          desc: desc,
-          contact: contact,
-          images: images,
-          updatedAt: db.serverDate()
-        }
+        data: updateData
       });
 
     return {

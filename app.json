@@ -34,7 +34,7 @@
       },
       {
         "pagePath": "pages/publish/index",
-        "text": "发布"
+        "text": "登记"
       },
       {
         "pagePath": "pages/mine/index",
@@ -48,7 +48,7 @@
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "二手闲置",
+    "navigationBarTitleText": "闲置好物",
     "navigationBarTextStyle": "black"
   },
   "sitemapLocation": "sitemap.json",

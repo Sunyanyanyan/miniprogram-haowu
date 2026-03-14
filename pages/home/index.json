@@ -1,5 +1,4 @@
 {
-  "navigationBarTitleText": "二手闲置",
-  "enablePullDownRefresh": true,
-  "backgroundTextStyle": "dark"
+  "navigationBarTitleText": "闲置好物",
+  "enablePullDownRefresh": true
 }

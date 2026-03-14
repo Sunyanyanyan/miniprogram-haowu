@@ -33,7 +33,9 @@ Page({
         desc: item.desc,
         contact: item.contact,
         images: item.images,
+        tag: item.tag,
         status: item.status,
+        value: item.value,
         createdAt: this.formatDate(item.createdAt)
       };
 
@@ -141,7 +143,7 @@ Page({
       });
 
       wx.showToast({
-        title: newStatus === 'on' ? '已上架' : '已下架',
+        title: newStatus === 'on' ? '已展示' : '已隐藏',
         icon: 'success'
       });
 
@@ -189,8 +191,8 @@ Page({
 
   async report() {
     const res = await wx.showModal({
-      title: '举报',
-      content: '确定要举报此物品吗？'
+      title: '反馈',
+      content: '确定要反馈此好物信息吗？'
     });
 
     if (res.confirm) {
@@ -204,12 +206,12 @@ Page({
         });
 
         wx.showToast({
-          title: '举报成功',
+          title: '反馈成功',
           icon: 'success'
         });
       } catch (err) {
         wx.showToast({
-          title: '举报失败',
+          title: '反馈失败',
           icon: 'none'
         });
       }
@@ -221,6 +223,16 @@ Page({
       return {
         title: this.data.item.title,
         path: '/pages/detail/index?id=' + this.itemId,
+        imageUrl: this.data.item.images[0]
+      };
+    }
+  },
+
+  onShareTimeline() {
+    if (this.data.item) {
+      return {
+        title: this.data.item.title,
+        query: 'id=' + this.itemId,
         imageUrl: this.data.item.images[0]
       };
     }

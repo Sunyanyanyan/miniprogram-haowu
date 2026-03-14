@@ -1,3 +1,5 @@
+const tags = ['全部', '家用电器', '电子数码', '家居用品', '宠物用品', '运动器材', '图书音像', '厨房用品', '服装鞋帽', '美妆个护', '票务卡券', '食品饮料', '珠宝配饰', '其他'];
+
 Page({
   data: {
     items: [],
@@ -6,7 +8,10 @@ Page({
     page: 0,
     pageSize: 10,
     error: false,
-    errorMsg: ''
+    errorMsg: '',
+    isFirstShow: true,
+    tags: tags,
+    currentTag: '全部'
   },
 
   onLoad() {
@@ -14,7 +19,10 @@ Page({
   },
 
   onShow() {
-    this.refreshItems();
+    if (!this.data.isFirstShow) {
+      this.refreshItems();
+    }
+    this.setData({ isFirstShow: false });
   },
 
   async refreshItems() {
@@ -44,7 +52,8 @@ Page({
         data: {
           action: 'getList',
           page: this.data.page,
-          pageSize: this.data.pageSize
+          pageSize: this.data.pageSize,
+          tag: this.data.currentTag
         }
       });
 
@@ -61,7 +70,9 @@ Page({
             desc: item.desc,
             contact: item.contact,
             images: item.images,
+            tag: item.tag,
             status: item.status,
+            value: item.value,
             createdAt: this.formatDate(item.createdAt)
           });
         }
@@ -106,10 +117,8 @@ Page({
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    const hour = String(d.getHours()).padStart(2, '0');
-    const minute = String(d.getMinutes()).padStart(2, '0');
     
-    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute;
+    return year + '-' + month + '-' + day;
   },
 
   onReachBottom() {
@@ -134,6 +143,19 @@ Page({
     wx.navigateTo({
       url: '/pages/home/search'
     });
+  },
+
+  onTagTap(e) {
+    const tag = e.currentTarget.dataset.tag;
+    if (tag === this.data.currentTag) return;
+    
+    this.setData({
+      currentTag: tag,
+      items: [],
+      page: 0,
+      hasMore: true
+    });
+    this.loadItems();
   },
 
   onRetry() {

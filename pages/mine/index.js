@@ -5,12 +5,16 @@ Page({
     userInfo: null,
     hasUserInfo: false,
     myItems: [],
+    filteredItems: [],
     loading: true,
-    clickCount: 0
+    isAdmin: false,
+    currentTab: 'on',
+    onCount: 0,
+    offCount: 0
   },
 
   onLoad() {
-    this.checkUserInfo();
+    this.checkLogin();
   },
 
   onShow() {
@@ -19,7 +23,7 @@ Page({
     }
   },
 
-  checkUserInfo() {
+  checkLogin() {
     const userInfo = wx.getStorageSync('userInfo');
     if (userInfo) {
       this.setData({
@@ -27,13 +31,14 @@ Page({
         hasUserInfo: true
       });
       this.loadMyItems();
+      this.checkAdmin();
     }
   },
 
   getUserProfile() {
     const that = this;
     wx.getUserProfile({
-      desc: '用于发布物品和联系',
+      desc: '用于登记好物和沟通',
       success: function(res) {
         wx.setStorageSync('userInfo', res.userInfo);
         that.setData({
@@ -41,6 +46,7 @@ Page({
           hasUserInfo: true
         });
         that.loadMyItems();
+        that.checkAdmin();
       },
       fail: function() {
         wx.showToast({
@@ -64,6 +70,8 @@ Page({
 
       const items = res.result.data || [];
       const formattedItems = [];
+      let onCount = 0;
+      let offCount = 0;
       
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
@@ -74,20 +82,47 @@ Page({
           desc: item.desc,
           contact: item.contact,
           images: item.images,
+          tag: item.tag,
           status: item.status,
+          value: item.value,
           createdAt: this.formatDate(item.createdAt),
           updatedAt: this.formatDate(item.updatedAt)
         });
+        
+        if (item.status === 'on') {
+          onCount++;
+        } else {
+          offCount++;
+        }
       }
+
+      const filteredItems = formattedItems.filter(function(item) {
+        return item.status === this.data.currentTab;
+      }.bind(this));
 
       this.setData({
         myItems: formattedItems,
+        filteredItems: filteredItems,
+        onCount: onCount,
+        offCount: offCount,
         loading: false
       });
     } catch (err) {
       console.error('加载失败', err);
       this.setData({ loading: false });
     }
+  },
+
+  onTabChange(e) {
+    const tab = e.currentTarget.dataset.tab;
+    const filteredItems = this.data.myItems.filter(function(item) {
+      return item.status === tab;
+    });
+    
+    this.setData({
+      currentTab: tab,
+      filteredItems: filteredItems
+    });
   },
 
   formatDate(date) {
@@ -133,7 +168,7 @@ Page({
       });
 
       wx.showToast({
-        title: newStatus === 'on' ? '已上架' : '已下架',
+        title: newStatus === 'on' ? '已展示' : '已隐藏',
         icon: 'success'
       });
 
@@ -179,35 +214,29 @@ Page({
     }
   },
 
-  onVersionTap() {
-    this.setData({ clickCount: this.data.clickCount + 1 });
-
-    if (this.data.clickCount >= 5) {
-      this.checkAdmin();
-      this.setData({ clickCount: 0 });
-    }
+  goToAdmin() {
+    wx.navigateTo({ url: '/pages/admin/index' });
   },
 
-  async checkAdmin() {
-    try {
-      const res = await wx.cloud.callFunction({
-        name: 'admin',
-        data: { action: 'checkAdmin' }
-      });
-
-      if (res.result.isAdmin) {
-        wx.navigateTo({ url: '/pages/admin/index' });
-      } else {
-        wx.showToast({
-          title: '无权限',
-          icon: 'none'
-        });
+  checkAdmin() {
+    const that = this;
+    const timer = setTimeout(function() {
+      that.setData({ isAdmin: false });
+    }, 3000);
+    
+    wx.cloud.callFunction({
+      name: 'admin',
+      data: { action: 'checkAdmin' },
+      success: function(res) {
+        clearTimeout(timer);
+        if (res.result && res.result.isAdmin) {
+          that.setData({ isAdmin: true });
+        }
+      },
+      fail: function() {
+        clearTimeout(timer);
+        that.setData({ isAdmin: false });
       }
-    } catch (err) {
-      wx.showToast({
-        title: '校验失败',
-        icon: 'none'
-      });
-    }
+    });
   }
 });

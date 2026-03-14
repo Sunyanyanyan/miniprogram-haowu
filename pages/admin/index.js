@@ -3,14 +3,69 @@ Page({
     items: [],
     loading: true,
     stats: {
+      userCount: 0,
       total: 0,
       on: 0,
       off: 0
+    },
+    analytics: {
+      pageViews: {},
+      clicks: {},
+      totalRecords: 0
     }
   },
 
   onLoad() {
     this.loadAllItems();
+    this.loadStats();
+    this.loadAnalytics();
+  },
+
+  async loadAnalytics() {
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'analytics',
+        data: {
+          action: 'getStats'
+        }
+      });
+
+      if (res.result && res.result.data) {
+        this.setData({
+          analytics: {
+            pageViews: res.result.data.pageViewStats || {},
+            clicks: res.result.data.clickStats || {},
+            totalRecords: res.result.data.totalRecords || 0
+          }
+        });
+      }
+    } catch (err) {
+      console.error('加载埋点数据失败', err);
+    }
+  },
+
+  async loadStats() {
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'admin',
+        data: {
+          action: 'getStats'
+        }
+      });
+
+      if (res.result && res.result.data) {
+        this.setData({
+          stats: {
+            userCount: res.result.data.userCount || 0,
+            total: res.result.data.totalItems || 0,
+            on: res.result.data.onItems || 0,
+            off: res.result.data.offItems || 0
+          }
+        });
+      }
+    } catch (err) {
+      console.error('加载统计失败', err);
+    }
   },
 
   async loadAllItems() {
@@ -25,15 +80,9 @@ Page({
       });
 
       const items = res.result.data || [];
-      const stats = {
-        total: items.length,
-        on: items.filter(item => item.status === 'on').length,
-        off: items.filter(item => item.status === 'off').length
-      };
 
       this.setData({
         items,
-        stats,
         loading: false
       });
     } catch (err) {
@@ -66,6 +115,7 @@ Page({
       });
 
       this.loadAllItems();
+      this.loadStats();
     } catch (err) {
       wx.showToast({
         title: '操作失败',
@@ -98,6 +148,7 @@ Page({
         });
 
         this.loadAllItems();
+        this.loadStats();
       } catch (err) {
         wx.showToast({
           title: '删除失败',

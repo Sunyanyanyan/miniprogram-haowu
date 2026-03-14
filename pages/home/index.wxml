@@ -1,7 +1,23 @@
 <view class="container">
-  <view class="search-bar" bindtap="onSearch">
-    <text class="search-text">搜索闲置物品</text>
+  <view class="search-section">
+    <view class="search-bar" bindtap="onSearch">
+      <text class="search-text">搜索闲置好物</text>
+    </view>
   </view>
+
+  <scroll-view class="tags-scroll" scroll-x="{{true}}">
+    <view class="tags-list">
+      <view 
+        class="tag-item {{currentTag === item ? 'active' : ''}}" 
+        wx:for="{{tags}}" 
+        wx:key="*this"
+        data-tag="{{item}}"
+        bindtap="onTagTap"
+      >
+        {{item}}
+      </view>
+    </view>
+  </scroll-view>
 
   <view class="items-grid" wx:if="{{items.length > 0}}">
     <view 
@@ -11,10 +27,16 @@
       data-id="{{item._id}}"
       bindtap="goToDetail"
     >
-      <image class="item-image" src="{{item.images[0]}}" mode="aspectFill"></image>
+      <view class="image-wrap">
+        <image 
+          class="item-image" 
+          src="{{item.images[0]}}" 
+          mode="aspectFill"
+        ></image>
+      </view>
       <view class="item-info">
         <text class="item-title">{{item.title}}</text>
-        <text class="item-time">{{item.createdAt}}</text>
+        <text class="item-value" wx:if="{{item.value}}">好物值： {{item.value}}</text>
       </view>
     </view>
   </view>
@@ -37,7 +59,7 @@
   </view>
 
   <view class="empty" wx:if="{{!loading && !error && items.length === 0}}">
-    <text class="empty-text">暂无物品</text>
-    <text class="empty-tip">快去发布你的闲置物品吧</text>
+    <text class="empty-text">暂无好物</text>
+    <text class="empty-tip">快去登记你的闲置好物吧</text>
   </view>
 </view>
