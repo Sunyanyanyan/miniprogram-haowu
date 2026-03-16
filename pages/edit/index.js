@@ -125,17 +125,47 @@ Page({
   async uploadImage(filePath) {
     const cloudPath = 'items/' + Date.now() + '-' + Math.random().toString(36).substr(2) + '.jpg';
     
+    let uploadPath = filePath;
+    try {
+      const compressRes = await new Promise((resolve, reject) => {
+        wx.compressImage({
+          src: filePath,
+          quality: 70,
+          success: resolve,
+          fail: reject
+        });
+      });
+      uploadPath = compressRes.tempFilePath;
+    } catch (err) {
+      console.log('压缩失败，使用原图', err);
+    }
+
     const uploadRes = await wx.cloud.uploadFile({
       cloudPath: cloudPath,
-      filePath: filePath
+      filePath: uploadPath
     });
 
-    const currentImages = this.data.images;
-    if (currentImages.length < 3) {
-      currentImages.push(uploadRes.fileID);
-      this.setData({
-        images: currentImages
+    try {
+      const tempRes = await wx.cloud.getTempFileURL({
+        fileList: [uploadRes.fileID]
       });
+      const tempFileURL = tempRes.fileList[0].tempFileURL;
+      const currentImages = this.data.images;
+      if (currentImages.length < 3) {
+        currentImages.push(tempFileURL);
+        this.setData({
+          images: currentImages
+        });
+      }
+    } catch (err) {
+      console.log('获取临时URL失败，使用fileID', err);
+      const currentImages = this.data.images;
+      if (currentImages.length < 3) {
+        currentImages.push(uploadRes.fileID);
+        this.setData({
+          images: currentImages
+        });
+      }
     }
   },
 

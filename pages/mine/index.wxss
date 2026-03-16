@@ -112,6 +112,14 @@
   background-color: #f0f0f0;
 }
 
+.item-image.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 20rpx;
+}
+
 .item-info {
   flex: 1;
 }

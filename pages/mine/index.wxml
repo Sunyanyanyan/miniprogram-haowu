@@ -25,7 +25,16 @@
     <view class="item-list">
       <view class="item-card" wx:for="{{filteredItems}}" wx:key="_id">
         <view class="item-main">
-          <image class="item-image" src="{{item.images[0]}}" mode="aspectFill"></image>
+          <image 
+            wx:if="{{item.images && item.images.length > 0}}"
+            class="item-image" 
+            src="{{item.images[0]}}" 
+            mode="aspectFill"
+            lazy-load="{{true}}"
+          ></image>
+          <view wx:else class="item-image placeholder">
+            <text>暂无图片</text>
+          </view>
           <view class="item-info">
             <text class="item-title">{{item.title}}</text>
             <text class="item-value" wx:if="{{item.value}}">好物值：{{item.value}}</text>

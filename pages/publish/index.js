@@ -123,26 +123,91 @@ Page({
     const filePath = files[index].tempFilePath;
     const cloudPath = 'items/' + Date.now() + '-' + Math.random().toString(36).substr(2) + '.jpg';
     
-    wx.cloud.uploadFile({
-      cloudPath: cloudPath,
-      filePath: filePath,
-      success: function(uploadRes) {
-        const currentImages = that.data.images;
-        if (currentImages.length < 3) {
-          currentImages.push(uploadRes.fileID);
-          that.setData({
-            images: currentImages
-          });
-        }
-        that.uploadImages(files, index + 1, that);
+    wx.compressImage({
+      src: filePath,
+      quality: 70,
+      success: function(compressRes) {
+        const compressedPath = compressRes.tempFilePath;
+        
+        wx.cloud.uploadFile({
+          cloudPath: cloudPath,
+          filePath: compressedPath,
+          success: function(uploadRes) {
+            wx.cloud.getTempFileURL({
+              fileList: [uploadRes.fileID],
+              success: function(tempRes) {
+                const tempFileURL = tempRes.fileList[0].tempFileURL;
+                const currentImages = that.data.images;
+                if (currentImages.length < 3) {
+                  currentImages.push(tempFileURL);
+                  that.setData({
+                    images: currentImages
+                  });
+                }
+                that.uploadImages(files, index + 1, that);
+              },
+              fail: function(err) {
+                const currentImages = that.data.images;
+                if (currentImages.length < 3) {
+                  currentImages.push(uploadRes.fileID);
+                  that.setData({
+                    images: currentImages
+                  });
+                }
+                that.uploadImages(files, index + 1, that);
+              }
+            });
+          },
+          fail: function(err) {
+            wx.hideLoading();
+            console.error('上传失败', err);
+            wx.showToast({
+              title: '上传失败',
+              icon: 'none',
+              duration: 2000
+            });
+          }
+        });
       },
       fail: function(err) {
-        wx.hideLoading();
-        console.error('上传失败', err);
-        wx.showToast({
-          title: '上传失败',
-          icon: 'none',
-          duration: 2000
+        wx.cloud.uploadFile({
+          cloudPath: cloudPath,
+          filePath: filePath,
+          success: function(uploadRes) {
+            wx.cloud.getTempFileURL({
+              fileList: [uploadRes.fileID],
+              success: function(tempRes) {
+                const tempFileURL = tempRes.fileList[0].tempFileURL;
+                const currentImages = that.data.images;
+                if (currentImages.length < 3) {
+                  currentImages.push(tempFileURL);
+                  that.setData({
+                    images: currentImages
+                  });
+                }
+                that.uploadImages(files, index + 1, that);
+              },
+              fail: function(err) {
+                const currentImages = that.data.images;
+                if (currentImages.length < 3) {
+                  currentImages.push(uploadRes.fileID);
+                  that.setData({
+                    images: currentImages
+                  });
+                }
+                that.uploadImages(files, index + 1, that);
+              }
+            });
+          },
+          fail: function(err) {
+            wx.hideLoading();
+            console.error('上传失败', err);
+            wx.showToast({
+              title: '上传失败',
+              icon: 'none',
+              duration: 2000
+            });
+          }
         });
       }
     });

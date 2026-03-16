@@ -1,7 +1,15 @@
 <view class="container">
   <view class="search-section">
-    <view class="search-bar" bindtap="onSearch">
-      <text class="search-text">搜索闲置好物</text>
+    <view class="search-bar">
+      <input 
+        class="search-input" 
+        placeholder="搜索闲置好物" 
+        value="{{keyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+        confirm-type="search"
+      />
+      <view class="search-clear" wx:if="{{keyword}}" bindtap="clearSearch">×</view>
     </view>
   </view>
 
@@ -29,10 +37,17 @@
     >
       <view class="image-wrap">
         <image 
+          wx:if="{{item.images && item.images.length > 0}}"
           class="item-image" 
           src="{{item.images[0]}}" 
           mode="aspectFill"
+          lazy-load="{{true}}"
+          binderror="onImageError"
+          data-index="{{index}}"
         ></image>
+        <view wx:else class="item-image placeholder">
+          <text>暂无图片</text>
+        </view>
       </view>
       <view class="item-info">
         <text class="item-title">{{item.title}}</text>

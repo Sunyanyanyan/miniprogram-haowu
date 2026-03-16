@@ -92,12 +92,21 @@ async function getItemList(event) {
     let query = db.collection('items').where(condition);
 
     if (keyword) {
-      query = query.where({
-        title: db.RegExp({
-          regexp: keyword,
-          options: 'i'
-        })
-      });
+      const dbCmd = db.command;
+      query = query.where(dbCmd.or([
+        {
+          title: db.RegExp({
+            regexp: keyword,
+            options: 'i'
+          })
+        },
+        {
+          desc: db.RegExp({
+            regexp: keyword,
+            options: 'i'
+          })
+        }
+      ]));
     }
 
     const result = await query

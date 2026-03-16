@@ -11,10 +11,12 @@ Page({
     errorMsg: '',
     isFirstShow: true,
     tags: tags,
-    currentTag: '全部'
+    currentTag: '全部',
+    keyword: ''
   },
 
   onLoad() {
+    this.setData({ currentTag: '全部' });
     this.loadItems();
   },
 
@@ -53,7 +55,8 @@ Page({
           action: 'getList',
           page: this.data.page,
           pageSize: this.data.pageSize,
-          tag: this.data.currentTag
+          tag: this.data.currentTag,
+          keyword: this.data.keyword
         }
       });
 
@@ -139,10 +142,17 @@ Page({
     });
   },
 
-  onSearch() {
-    wx.navigateTo({
-      url: '/pages/home/search'
-    });
+  onSearchInput(e) {
+    this.setData({ keyword: e.detail.value });
+  },
+
+  onSearchConfirm() {
+    this.refreshItems();
+  },
+
+  clearSearch() {
+    this.setData({ keyword: '' });
+    this.refreshItems();
   },
 
   onTagTap(e) {
@@ -160,5 +170,14 @@ Page({
 
   onRetry() {
     this.refreshItems();
+  },
+
+  onImageError(e) {
+    const index = e.currentTarget.dataset.index;
+    const items = this.data.items;
+    if (items[index]) {
+      items[index].imageError = true;
+      this.setData({ items: items });
+    }
   }
 });
