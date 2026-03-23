@@ -1,0 +1,24 @@
+{
+  "name": "miniprogram-1",
+  "version": "1.0.0",
+  "description": "一个基于微信小程序云开发的校园二手闲置物品发布平台，支持物品发布、浏览、搜索、编辑等功能。",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sunyanyanyan/miniprogram-haowu.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Sunyanyanyan/miniprogram-haowu/issues"
+  },
+  "homepage": "https://github.com/Sunyanyanyan/miniprogram-haowu#readme",
+  "dependencies": {
+    "vant-weapp": "^0.5.29"
+  }
+}

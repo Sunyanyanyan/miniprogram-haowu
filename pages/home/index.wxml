@@ -1,6 +1,7 @@
 <view class="container">
   <view class="search-section">
     <view class="search-bar">
+      <text class="search-icon">🔍</text>
       <input 
         class="search-input" 
         placeholder="搜索闲置好物" 
@@ -27,54 +28,106 @@
     </view>
   </scroll-view>
 
-  <view class="items-grid" wx:if="{{items.length > 0}}">
-    <view 
-      class="item-card" 
-      wx:for="{{items}}" 
-      wx:key="_id"
-      data-id="{{item._id}}"
-      bindtap="goToDetail"
-    >
-      <view class="image-wrap">
-        <image 
-          wx:if="{{item.images && item.images.length > 0}}"
-          class="item-image" 
-          src="{{item.images[0]}}" 
-          mode="aspectFill"
-          lazy-load="{{true}}"
-          binderror="onImageError"
-          data-index="{{index}}"
-        ></image>
-        <view wx:else class="item-image placeholder">
-          <text>暂无图片</text>
+  <view class="waterfall" wx:if="{{items.length > 0}}">
+    <view class="waterfall-column">
+      <view 
+        class="item-card {{item.isExpired ? 'expired' : ''}}" 
+        wx:for="{{items}}" 
+        wx:key="_id"
+        wx:if="{{index % 2 === 0}}"
+        data-id="{{item._id}}"
+        bindtap="goToDetail"
+      >
+        <view class="card-image-wrap">
+          <view class="urgent-badge" wx:if="{{item.isUrgent && !item.isExpired}}">
+            <text>🔥 极速中</text>
+          </view>
+          <view class="expired-badge" wx:if="{{item.isExpired}}">
+            <text>已失效</text>
+          </view>
+          <image 
+            wx:if="{{item.images && item.images.length > 0}}"
+            class="card-image" 
+            src="{{item.images[0]}}" 
+            mode="aspectFill"
+            lazy-load="{{true}}"
+            binderror="onImageError"
+            data-index="{{index}}"
+          ></image>
+          <view wx:else class="card-image placeholder">
+            <text>暂无图片</text>
+          </view>
+        </view>
+        <view class="card-content">
+          <text class="card-title">{{item.title}}</text>
+          <view class="card-meta">
+            <text class="card-value" wx:if="{{item.value}}">好物值：{{item.value}}</text>
+          </view>
         </view>
       </view>
-      <view class="item-info">
-        <text class="item-title">{{item.title}}</text>
-        <text class="item-value" wx:if="{{item.value}}">好物值： {{item.value}}</text>
+    </view>
+    <view class="waterfall-column">
+      <view 
+        class="item-card {{item.isExpired ? 'expired' : ''}}" 
+        wx:for="{{items}}" 
+        wx:key="_id"
+        wx:if="{{index % 2 === 1}}"
+        data-id="{{item._id}}"
+        bindtap="goToDetail"
+      >
+        <view class="card-image-wrap">
+          <view class="urgent-badge" wx:if="{{item.isUrgent && !item.isExpired}}">
+            <text>🔥 极速中</text>
+          </view>
+          <view class="expired-badge" wx:if="{{item.isExpired}}">
+            <text>已失效</text>
+          </view>
+          <image 
+            wx:if="{{item.images && item.images.length > 0}}"
+            class="card-image" 
+            src="{{item.images[0]}}" 
+            mode="aspectFill"
+            lazy-load="{{true}}"
+            binderror="onImageError"
+            data-index="{{index}}"
+          ></image>
+          <view wx:else class="card-image placeholder">
+            <text>暂无图片</text>
+          </view>
+        </view>
+        <view class="card-content">
+          <text class="card-title">{{item.title}}</text>
+          <view class="card-meta">
+            <text class="card-value" wx:if="{{item.value}}">好物值：{{item.value}}</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>
 
   <view class="loading" wx:if="{{loading && items.length === 0}}">
+    <view class="loading-spinner"></view>
     <text>加载中...</text>
   </view>
 
-  <view class="loading" wx:if="{{loading && items.length > 0}}">
+  <view class="loading-more" wx:if="{{loading && items.length > 0}}">
+    <view class="loading-spinner small"></view>
     <text>加载更多...</text>
   </view>
 
   <view class="no-more" wx:if="{{!hasMore && items.length > 0}}">
-    <text>没有更多了</text>
+    <text>— 已经到底啦 —</text>
   </view>
 
   <view class="error" wx:if="{{error && items.length === 0}}">
+    <text class="error-icon">😕</text>
     <text class="error-text">{{errorMsg}}</text>
     <button class="retry-btn" bindtap="onRetry">重试</button>
   </view>
 
   <view class="empty" wx:if="{{!loading && !error && items.length === 0}}">
-    <text class="empty-text">暂无好物</text>
-    <text class="empty-tip">快去登记你的闲置好物吧</text>
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">暂无记录</text>
+    <text class="empty-tip">快去登记第一条好物吧</text>
   </view>
 </view>

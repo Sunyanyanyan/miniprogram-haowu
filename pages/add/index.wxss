@@ -1,19 +1,27 @@
 .container {
-  padding: 20rpx;
-  background-color: #f5f5f5;
+  padding: 0;
+  background-color: #F8F9FB;
   min-height: 100vh;
   padding-bottom: 40rpx;
 }
 
+.loading {
+  text-align: center;
+  padding: 100rpx 0;
+  color: #999;
+}
+
 .form-section {
   background-color: #fff;
+  margin: 20rpx;
   border-radius: 16rpx;
   padding: 30rpx;
-  margin-bottom: 20rpx;
+  position: relative;
+  z-index: 1;
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: bold;
   color: #333;
   margin-bottom: 12rpx;
@@ -71,7 +79,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #fafafa;
+  background-color: #F8F9FB;
 }
 
 .add-icon {
@@ -94,10 +102,16 @@
 
 .form-item {
   margin-bottom: 32rpx;
+  position: relative;
 }
 
 .form-item:last-child {
   margin-bottom: 0;
+}
+
+.picker-wrapper {
+  display: block;
+  width: 100%;
 }
 
 .form-label {
@@ -127,14 +141,15 @@
   font-size: 28rpx;
   color: #333;
   box-sizing: border-box;
-  transition: border-color 0.3s;
-  background-color: #fafafa;
+  transition: all 0.3s ease;
+  background-color: #F8F9FB;
   line-height: 88rpx;
 }
 
 .form-input:focus {
-  border-color: #FF6B35;
+  border-color: #9B59B6;
   background-color: #fff;
+  box-shadow: 0 0 0 4rpx rgba(155, 89, 182, 0.1);
 }
 
 .form-textarea {
@@ -146,13 +161,14 @@
   color: #333;
   box-sizing: border-box;
   min-height: 200rpx;
-  transition: border-color 0.3s;
-  background-color: #fafafa;
+  transition: all 0.3s ease;
+  background-color: #F8F9FB;
 }
 
 .form-textarea:focus {
-  border-color: #FF6B35;
+  border-color: #9B59B6;
   background-color: #fff;
+  box-shadow: 0 0 0 4rpx rgba(155, 89, 182, 0.1);
 }
 
 .input-placeholder {
@@ -169,15 +185,23 @@
   font-size: 28rpx;
   color: #333;
   box-sizing: border-box;
-  background-color: #fafafa;
+  background-color: #F8F9FB;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+.picker-placeholder {
+  color: #bbb;
+}
+
+.picker-value {
+  color: #333;
+}
+
 .picker-arrow {
-  font-size: 24rpx;
-  color: #999;
+  font-size: 20rpx;
+  color: #9B59B6;
 }
 
 .input-count {
@@ -187,20 +211,32 @@
   margin-top: 8rpx;
 }
 
+.form-tip {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
 .submit-section {
-  margin-top: 40rpx;
+  margin: 40rpx 20rpx;
 }
 
 .submit-btn {
   width: 100%;
-  background-color: #FF6B35;
+  background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
   color: #fff;
   border-radius: 50rpx;
   padding: 32rpx 0;
   font-size: 32rpx;
   font-weight: 500;
   border: none;
-  box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(155, 89, 182, 0.3);
+  transition: all 0.3s ease;
+}
+
+.submit-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.3);
 }
 
 .submit-btn[disabled] {
@@ -213,4 +249,85 @@
   margin-top: 20rpx;
   font-size: 24rpx;
   color: #999;
+}
+
+.tag-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.tag-modal-content {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 30rpx;
+  padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
+}
+
+.tag-modal-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.tag-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.tag-option {
+  width: calc(33.33% - 14rpx);
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666;
+  background-color: #F8F9FB;
+  border-radius: 12rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tag-option.active {
+  background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+  color: #fff;
+  border-color: #9B59B6;
+}
+
+.expire-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.expire-option {
+  padding: 16rpx 24rpx;
+  font-size: 26rpx;
+  color: #666;
+  background-color: #F8F9FB;
+  border-radius: 8rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s ease;
+}
+
+.expire-option.active {
+  background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+  color: #fff;
+  border-color: #9B59B6;
+}
+
+.expire-tip {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 16rpx;
 }

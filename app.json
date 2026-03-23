@@ -1,7 +1,7 @@
 {
   "pages": [
     "pages/home/index",
-    "pages/publish/index",
+    "pages/add/index",
     "pages/mine/index"
   ],
   "subpackages": [
@@ -23,17 +23,17 @@
   ],
   "tabBar": {
     "color": "#999999",
-    "selectedColor": "#FF6B35",
+    "selectedColor": "#9B59B6",
     "backgroundColor": "#ffffff",
     "borderStyle": "black",
     "list": [
       {
         "pagePath": "pages/home/index",
-        "text": "首页"
+        "text": "主页"
       },
       {
-        "pagePath": "pages/publish/index",
-        "text": "登记"
+        "pagePath": "pages/add/index",
+        "text": "录入"
       },
       {
         "pagePath": "pages/mine/index",
@@ -43,12 +43,18 @@
   },
   "requiredPrivateInfos": ["chooseAddress"],
   "lazyCodeLoading": "requiredComponents",
-  "usingComponents": {},
+  "usingComponents": {
+    "van-card": "miniprogram_npm/vant/lib/card/index",
+    "van-button": "miniprogram_npm/vant/lib/button/index",
+    "van-search": "miniprogram_npm/vant/lib/search/index",
+    "van-tab": "miniprogram_npm/vant/lib/tab/index",
+    "van-tabs": "miniprogram_npm/vant/lib/tabs/index"
+  },
   "window": {
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "闲置好物",
-    "navigationBarTextStyle": "black"
+    "navigationBarBackgroundColor": "#9B59B6",
+    "navigationBarTitleText": "好物看板",
+    "navigationBarTextStyle": "white"
   },
   "sitemapLocation": "sitemap.json",
   "permission": {

@@ -1,4 +1,4 @@
-const tags = ['全部', '家用电器', '电子数码', '家居用品', '宠物用品', '运动器材', '图书音像', '厨房用品', '服装鞋帽', '美妆个护', '票务卡券', '食品饮料', '珠宝配饰', '其他'];
+const tags = ['全部', '母婴', '日常', '美妆', '食品', '其它'];
 
 Page({
   data: {
@@ -24,7 +24,10 @@ Page({
     if (!this.data.isFirstShow) {
       this.refreshItems();
     }
-    this.setData({ isFirstShow: false });
+
+    this.setData({
+      isFirstShow: false
+    });
   },
 
   async refreshItems() {
@@ -62,11 +65,15 @@ Page({
 
       if (res.errMsg === 'cloud.callFunction:ok' && res.result) {
         const newItems = res.result.data || [];
+        const hasMore = res.result.hasMore || false;
+        const now = Date.now();
         
-        const formattedItems = [];
-        for (let i = 0; i < newItems.length; i++) {
-          const item = newItems[i];
-          formattedItems.push({
+        const formattedItems = newItems.map(item => {
+          const createdAt = item.createdAt ? new Date(item.createdAt).getTime() : now;
+          const isExpired = item.expireAt && item.expireAt < now;
+          const isUrgent = !isExpired && (now - createdAt) < 30 * 60 * 1000;
+          
+          return {
             _id: item._id,
             _openid: item._openid,
             title: item.title,
@@ -76,14 +83,17 @@ Page({
             tag: item.tag,
             status: item.status,
             value: item.value,
-            createdAt: this.formatDate(item.createdAt)
-          });
-        }
+            createdAt: this.formatTime(item.createdAt),
+            createdAtTime: createdAt,
+            isUrgent: isUrgent,
+            isExpired: isExpired
+          };
+        });
         
         this.setData({
           items: this.data.items.concat(formattedItems),
           loading: false,
-          hasMore: newItems.length === this.data.pageSize,
+          hasMore: hasMore,
           page: this.data.page + 1
         });
       } else {
@@ -113,15 +123,47 @@ Page({
     }
   },
 
-  formatDate(date) {
+  formatTime(date) {
     if (!date) return '';
     
     const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
     
-    return year + '-' + month + '-' + day;
+    if (diff < 60000) {
+      return '刚刚';
+    } else if (diff < 3600000) {
+      return Math.floor(diff / 60000) + '分钟前';
+    } else if (diff < 86400000) {
+      return Math.floor(diff / 3600000) + '小时前';
+    } else {
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return month + '-' + day;
+    }
+  },
+
+  formatExpireTime(expireAt) {
+    if (!expireAt) return '';
+
+    try {
+      const d = new Date(expireAt);
+      if (isNaN(d.getTime())) return '';
+
+      const pad = value => String(value).padStart(2, '0');
+
+      const year = d.getFullYear();
+      const month = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const hour = pad(d.getHours());
+      const minute = pad(d.getMinutes());
+      const second = pad(d.getSeconds());
+
+      return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    } catch (e) {
+      console.error('格式化过期时间失败:', e);
+      return '';
+    }
   },
 
   onReachBottom() {
@@ -147,11 +189,15 @@ Page({
   },
 
   onSearchConfirm() {
+    this.setData({ currentTag: '全部' });
     this.refreshItems();
   },
 
   clearSearch() {
-    this.setData({ keyword: '' });
+    this.setData({ 
+      keyword: '',
+      currentTag: '全部'
+    });
     this.refreshItems();
   },
 

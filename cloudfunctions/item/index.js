@@ -26,8 +26,6 @@ exports.main = async (event, context) => {
       return await updateItemStatus(event, openid);
     case 'delete':
       return await deleteItem(event, openid);
-    case 'report':
-      return await reportItem(event);
     default:
       return {
         errCode: -1,
@@ -41,8 +39,10 @@ async function createItem(event, openid) {
   const desc = event.desc;
   const contact = event.contact;
   const images = event.images;
-  const tag = event.tag || '其他';
+  const tag = event.tag || '其它';
   const value = event.value || 0;
+  const expireAt = event.expireAt || null;
+  const expireDays = event.expireDays || 365;
 
   try {
     const result = await db.collection('items').add({
@@ -55,6 +55,8 @@ async function createItem(event, openid) {
         tag: tag,
         value: value,
         status: 'on',
+        expireAt: expireAt,
+        expireDays: expireDays,
         createdAt: db.serverDate(),
         updatedAt: db.serverDate()
       }
@@ -62,14 +64,14 @@ async function createItem(event, openid) {
 
     return {
       errCode: 0,
-      errMsg: '发布成功',
+      errMsg: '录入成功',
       data: result
     };
   } catch (err) {
-    console.error('发布失败', err);
+    console.error('录入失败', err);
     return {
       errCode: -1,
-      errMsg: '发布失败'
+      errMsg: '录入失败'
     };
   }
 }
@@ -81,6 +83,9 @@ async function getItemList(event) {
   const tag = event.tag;
 
   try {
+    const dbCmd = db.command;
+    const now = Date.now();
+    
     let condition = {
       status: 'on'
     };
@@ -92,7 +97,6 @@ async function getItemList(event) {
     let query = db.collection('items').where(condition);
 
     if (keyword) {
-      const dbCmd = db.command;
       query = query.where(dbCmd.or([
         {
           title: db.RegExp({
@@ -109,22 +113,45 @@ async function getItemList(event) {
       ]));
     }
 
+    const fetchSize = pageSize * 2;
     const result = await query
-      .orderBy('createdAt', 'desc')
+      .orderBy('updatedAt', 'desc')
       .skip(page * pageSize)
-      .limit(pageSize)
+      .limit(fetchSize)
       .get();
+
+    const filteredData = result.data.filter(function(item) {
+      if (!item.expireAt) return true;
+      const expireTime = typeof item.expireAt === 'number' ? item.expireAt : new Date(item.expireAt).getTime();
+      return expireTime > now;
+    });
+
+    const sortedData = filteredData.sort(function(a, b) {
+      const aExpire = a.expireAt ? (typeof a.expireAt === 'number' ? a.expireAt : new Date(a.expireAt).getTime()) : Infinity;
+      const bExpire = b.expireAt ? (typeof b.expireAt === 'number' ? b.expireAt : new Date(b.expireAt).getTime()) : Infinity;
+      
+      const aUrgent = aExpire - now < 30 * 60 * 1000;
+      const bUrgent = bExpire - now < 30 * 60 * 1000;
+      
+      if (aUrgent && !bUrgent) return -1;
+      if (!aUrgent && bUrgent) return 1;
+      
+      return 0;
+    });
+
+    const finalData = sortedData.slice(0, pageSize);
 
     return {
       errCode: 0,
       errMsg: '查询成功',
-      data: result.data
+      data: finalData,
+      hasMore: filteredData.length > pageSize
     };
   } catch (err) {
     console.error('查询失败', err);
     return {
       errCode: -1,
-      errMsg: '查询失败'
+      errMsg: '查询失败: ' + (err.message || err.errMsg || '未知错误')
     };
   }
 }
@@ -181,6 +208,8 @@ async function updateItem(event, openid) {
   const images = event.images;
   const tag = event.tag;
   const value = event.value;
+  const expireAt = event.expireAt;
+  const expireDays = event.expireDays;
 
   try {
     const item = await db.collection('items').doc(itemId).get();
@@ -208,6 +237,14 @@ async function updateItem(event, openid) {
       updateData.value = value;
     }
 
+    if (expireAt !== undefined) {
+      updateData.expireAt = expireAt;
+    }
+
+    if (expireDays !== undefined) {
+      updateData.expireDays = expireDays;
+    }
+
     const result = await db.collection('items')
       .doc(itemId)
       .update({
@@ -233,16 +270,30 @@ async function updateItemStatus(event, openid) {
   const status = event.status;
 
   try {
+    const item = await db.collection('items').doc(itemId).get();
+    
+    if (item.data._openid !== openid) {
+      return {
+        errCode: -1,
+        errMsg: '无权限操作'
+      };
+    }
+
+    const updateData = {
+      status: status,
+      updatedAt: db.serverDate()
+    };
+
+    if (status === 'on') {
+      const expireDays = item.data.expireDays || 365;
+      const now = new Date();
+      updateData.expireAt = now.getTime() + expireDays * 24 * 60 * 60 * 1000;
+    }
+
     const result = await db.collection('items')
-      .where({
-        _id: itemId,
-        _openid: openid
-      })
+      .doc(itemId)
       .update({
-        data: {
-          status: status,
-          updatedAt: db.serverDate()
-        }
+        data: updateData
       });
 
     return {
@@ -291,11 +342,4 @@ async function deleteItem(event, openid) {
       errMsg: '删除失败'
     };
   }
-}
-
-async function reportItem(event) {
-  return {
-    errCode: 0,
-    errMsg: '举报成功'
-  };
 }

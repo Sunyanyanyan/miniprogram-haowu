@@ -18,6 +18,7 @@ Page({
   },
 
   onShow() {
+    wx.setNavigationBarTitle({ title: '我的' });
     if (this.data.hasUserInfo) {
       this.loadMyItems();
     }
@@ -38,7 +39,7 @@ Page({
   getUserProfile() {
     const that = this;
     wx.getUserProfile({
-      desc: '用于登记好物和沟通',
+      desc: '用于录入信息和沟通',
       success: function(res) {
         wx.setStorageSync('userInfo', res.userInfo);
         that.setData({
@@ -75,6 +76,7 @@ Page({
       
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
+        
         formattedItems.push({
           _id: item._id,
           _openid: item._openid,
@@ -216,6 +218,84 @@ Page({
 
   goToAdmin() {
     wx.navigateTo({ url: '/pages/admin/index' });
+  },
+
+  async shareItem(e) {
+    const id = e.currentTarget.dataset.id;
+    const title = e.currentTarget.dataset.title;
+    const images = e.currentTarget.dataset.images;
+    
+    try {
+      wx.showLoading({ title: '生成中...' });
+      
+      const ctx = wx.createCanvasContext('shareCanvas');
+      const canvasWidth = 300;
+      const canvasHeight = 400;
+
+      ctx.setFillStyle('#ffffff');
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      if (images && images.length > 0) {
+        const imageUrl = images[0];
+        const imageInfo = await new Promise(function(resolve, reject) {
+          wx.getImageInfo({
+            src: imageUrl,
+            success: resolve,
+            fail: reject
+          });
+        });
+        ctx.drawImage(imageInfo.path, 15, 15, 270, 180);
+      }
+
+      ctx.setFillStyle('#333333');
+      ctx.setFontSize(18);
+      const displayTitle = title.length > 15 ? title.substring(0, 15) + '...' : title;
+      ctx.fillText(displayTitle, 15, 225);
+
+      ctx.setFillStyle('#9B59B6');
+      ctx.setFontSize(24);
+      ctx.fillText('好物值：查看详情', 15, 265);
+
+      ctx.setFillStyle('#999999');
+      ctx.setFontSize(12);
+      ctx.fillText('扫码查看详情', 15, 360);
+
+      ctx.setFillStyle('#666666');
+      ctx.setFontSize(10);
+      ctx.fillText('好物墙', 15, 380);
+
+      const tempFilePath = await new Promise(function(resolve, reject) {
+        wx.canvasToTempFilePath({
+          canvasId: 'shareCanvas',
+          success: function(res) { resolve(res.tempFilePath); },
+          fail: reject
+        });
+      });
+
+      wx.hideLoading();
+
+      wx.showModal({
+        title: '分享',
+        content: '分享图片已生成，是否保存到相册？',
+        success: function(res) {
+          if (res.confirm) {
+            wx.saveImageToPhotosAlbum({
+              filePath: tempFilePath,
+              success: function() {
+                wx.showToast({ title: '已保存', icon: 'success' });
+              },
+              fail: function() {
+                wx.showToast({ title: '保存失败', icon: 'none' });
+              }
+            });
+          }
+        }
+      });
+    } catch (err) {
+      console.error('分享失败', err);
+      wx.hideLoading();
+      wx.showToast({ title: '生成失败', icon: 'none' });
+    }
   },
 
   checkAdmin() {

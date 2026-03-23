@@ -1,3 +1,5 @@
 {
-  "navigationBarTitleText": "好物详情"
+  "navigationBarTitleText": "好物详情",
+  "navigationBarBackgroundColor": "#9B59B6",
+  "navigationBarTextStyle": "white"
 }

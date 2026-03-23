@@ -21,65 +21,35 @@ Page({
     expireIndex: 4,
     expireOptions: expireOptions,
     submitting: false,
-    itemId: '',
-    loading: true,
+    isFirstShow: true,
+    loading: false,
     showTagModal: false
   },
 
   onLoad(options) {
-    if (options.id) {
-      this.setData({ itemId: options.id });
-      this.loadDetail(options.id);
-    } else {
-      wx.showToast({ title: '参数错误', icon: 'none' });
-      setTimeout(function() {
-        wx.navigateBack();
-      }, 1500);
-    }
+    this.setData({ isFirstShow: true });
+    wx.setNavigationBarTitle({ title: '录入信息' });
   },
 
-  async loadDetail(itemId) {
-    try {
-      const res = await wx.cloud.callFunction({
-        name: 'item',
-        data: {
-          action: 'getDetail',
-          itemId: itemId
-        }
-      });
-
-      if (res.result && res.result.errCode === 0) {
-        const item = res.result.data;
-        const tagIndex = tags.indexOf(item.tag);
-        
-        let expireIndex = 4;
-        if (item.expireDays) {
-          const idx = expireOptions.findIndex(function(opt) {
-            return opt.value === item.expireDays;
-          });
-          if (idx >= 0) expireIndex = idx;
-        }
-        
-        this.setData({
-          images: item.images || [],
-          title: item.title || '',
-          desc: item.desc || '',
-          contact: item.contact || '',
-          tag: item.tag || '',
-          tagIndex: tagIndex >= 0 ? tagIndex : -1,
-          value: item.value ? String(item.value) : '',
-          expireIndex: expireIndex,
-          loading: false
-        });
-      } else {
-        this.setData({ loading: false });
-        wx.showToast({ title: '加载失败', icon: 'none' });
-      }
-    } catch (err) {
-      console.error('加载失败', err);
-      this.setData({ loading: false });
-      wx.showToast({ title: '加载失败', icon: 'none' });
+  onShow() {
+    if (!this.data.isFirstShow) {
+      this.resetForm();
     }
+    this.setData({ isFirstShow: false });
+  },
+
+  resetForm() {
+    this.setData({
+      images: [],
+      title: '',
+      desc: '',
+      contact: '',
+      tag: '',
+      tagIndex: -1,
+      value: '',
+      expireIndex: 4,
+      submitting: false
+    });
   },
 
   showTagPicker() {
@@ -114,6 +84,14 @@ Page({
     return now.getTime();
   },
 
+  onTagChange(e) {
+    const index = e.detail.value;
+    this.setData({
+      tagIndex: index,
+      tag: tags[index]
+    });
+  },
+
   onTitleInput(e) {
     this.setData({ title: e.detail.value });
   },
@@ -139,15 +117,15 @@ Page({
     this.setData({ contact: e.detail.value });
   },
 
-  goBack() {
-    wx.navigateBack();
-  },
-
   chooseImage() {
     const currentCount = this.data.images.length;
     
     if (currentCount >= 3) {
-      wx.showToast({ title: '最多上传3张图片', icon: 'none' });
+      wx.showToast({
+        title: '最多上传3张图片',
+        icon: 'none',
+        duration: 2000
+      });
       return;
     }
 
@@ -162,11 +140,16 @@ Page({
         const tempFiles = res.tempFiles;
         
         if (that.data.images.length + tempFiles.length > 3) {
-          wx.showToast({ title: '最多上传3张图片', icon: 'none' });
+          wx.showToast({
+            title: '最多上传3张图片',
+            icon: 'none',
+            duration: 2000
+          });
           return;
         }
         
         wx.showLoading({ title: '上传中...' });
+
         that.uploadImages(tempFiles, 0, that);
       }
     });
@@ -175,7 +158,11 @@ Page({
   async uploadImages(files, index, that) {
     if (index >= files.length || that.data.images.length >= 3) {
       wx.hideLoading();
-      wx.showToast({ title: '上传成功', icon: 'success' });
+      wx.showToast({
+        title: '上传成功',
+        icon: 'success',
+        duration: 1500
+      });
       return;
     }
 
@@ -184,7 +171,7 @@ Page({
     
     let uploadPath = filePath;
     try {
-      const compressRes = await new Promise(function(resolve, reject) {
+      const compressRes = await new Promise((resolve, reject) => {
         wx.compressImage({
           src: filePath,
           quality: 70,
@@ -206,13 +193,19 @@ Page({
       const currentImages = that.data.images;
       if (currentImages.length < 3) {
         currentImages.push(uploadRes.fileID);
-        that.setData({ images: currentImages });
+        that.setData({
+          images: currentImages
+        });
       }
       that.uploadImages(files, index + 1, that);
     } catch (err) {
       console.error('上传失败', err);
       wx.hideLoading();
-      wx.showToast({ title: '上传失败', icon: 'none' });
+      wx.showToast({
+        title: '上传失败',
+        icon: 'none',
+        duration: 2000
+      });
     }
   },
 
@@ -247,48 +240,46 @@ Page({
 
   async submit() {
     if (this.data.tagIndex < 0) {
-      wx.showToast({ title: '请选择标签', icon: 'none' });
+      wx.showToast({ title: '请选择标签', icon: 'none', duration: 2000 });
       return;
     }
 
     if (!this.data.title.trim()) {
-      wx.showToast({ title: '请输入标题', icon: 'none' });
+      wx.showToast({ title: '请输入标题', icon: 'none', duration: 2000 });
       return;
     }
 
     const valueResult = this.validateValue(this.data.value);
     if (!valueResult.valid) {
-      wx.showToast({ title: valueResult.message, icon: 'none' });
+      wx.showToast({ title: valueResult.message, icon: 'none', duration: 2000 });
       return;
     }
 
     if (!this.data.desc.trim()) {
-      wx.showToast({ title: '请输入详细描述', icon: 'none' });
+      wx.showToast({ title: '请输入详细描述', icon: 'none', duration: 2000 });
       return;
     }
 
     if (!this.data.contact.trim()) {
-      wx.showToast({ title: '请输入用户唯一标识', icon: 'none' });
+      wx.showToast({ title: '请输入用户唯一标识', icon: 'none', duration: 2000 });
       return;
     }
 
     if (this.data.images.length === 0) {
-      wx.showToast({ title: '请至少上传一张图片', icon: 'none' });
+      wx.showToast({ title: '请至少上传一张图片', icon: 'none', duration: 2000 });
       return;
     }
 
     this.setData({ submitting: true });
-    wx.showLoading({ title: '保存中...' });
-
-    const expireAt = this.calculateExpireAt();
-    const expireDays = expireOptions[this.data.expireIndex].value;
+    wx.showLoading({ title: '录入中...' });
 
     try {
+      const expireAt = this.calculateExpireAt();
+      const expireDays = expireOptions[this.data.expireIndex].value;
       const res = await wx.cloud.callFunction({
         name: 'item',
         data: {
-          action: 'update',
-          itemId: this.data.itemId,
+          action: 'create',
           title: this.data.title,
           desc: this.data.desc,
           contact: this.data.contact,
@@ -304,27 +295,31 @@ Page({
       this.setData({ submitting: false });
       
       if (res.result && res.result.errCode === 0) {
-        wx.showToast({ title: '保存成功', icon: 'success' });
-        setTimeout(function() {
-          wx.navigateBack();
+        wx.showToast({ title: '录入成功', icon: 'success' });
+        setTimeout(() => {
+          this.resetForm();
+          this.setData({ isFirstShow: true });
+          wx.switchTab({ url: '/pages/home/index' });
         }, 1500);
       } else {
-        const errorMsg = (res.result && res.result.errMsg) || '保存失败';
-        wx.showToast({ title: errorMsg, icon: 'none' });
+        const errorMsg = (res.result && res.result.errMsg) || '录入失败';
+        wx.showToast({ title: errorMsg, icon: 'none', duration: 3000 });
       }
     } catch (err) {
-      console.error('保存失败', err);
+      console.error('录入失败', err);
       wx.hideLoading();
       this.setData({ submitting: false });
       
-      let errorMsg = '保存失败';
+      let errorMsg = '录入失败';
       if (err.errMsg && err.errMsg.indexOf('FunctionName') >= 0) {
         errorMsg = '云函数未部署';
       } else if (err.errMsg && err.errMsg.indexOf('env not exists') >= 0) {
         errorMsg = '云开发环境未配置';
+      } else if (err.message) {
+        errorMsg = err.message;
       }
       
-      wx.showToast({ title: errorMsg, icon: 'none' });
+      wx.showToast({ title: errorMsg, icon: 'none', duration: 3000 });
     }
   }
 });

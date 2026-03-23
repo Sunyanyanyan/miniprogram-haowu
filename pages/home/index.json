@@ -1,4 +1,6 @@
 {
-  "navigationBarTitleText": "闲置好物",
+  "navigationBarTitleText": "好物看板",
+  "navigationBarBackgroundColor": "#9B59B6",
+  "navigationBarTextStyle": "white",
   "enablePullDownRefresh": true
 }

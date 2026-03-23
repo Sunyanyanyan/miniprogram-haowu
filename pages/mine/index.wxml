@@ -9,7 +9,7 @@
   </view>
 
   <view class="items-section" wx:if="{{hasUserInfo}}">
-    <view class="section-title">我的登记</view>
+    <view class="section-title">我的记录</view>
 
     <view class="tabs">
       <view class="tab-item {{currentTab === 'on' ? 'active' : ''}}" data-tab="on" bindtap="onTabChange">
@@ -44,19 +44,19 @@
           <view 
             class="action-btn edit" 
             data-id="{{item._id}}" 
-            bindtap="goToEdit"
+            catchtap="goToEdit"
           >
             编辑
           </view>
           <view 
-            class="action-btn {{item.status === 'on' ? 'off-btn' : 'on-btn'}}" 
+            class="action-btn {{item.status === 'off' ? 'on-btn' : 'off-btn'}}" 
             data-id="{{item._id}}" 
             data-status="{{item.status}}"
-            bindtap="toggleStatus"
+            catchtap="toggleStatus"
           >
-            {{item.status === 'on' ? '隐藏' : '展示'}}
+            {{item.status === 'off' ? '展示' : '隐藏'}}
           </view>
-          <view class="action-btn delete" data-id="{{item._id}}" bindtap="deleteItem">
+          <view class="action-btn delete" data-id="{{item._id}}" catchtap="deleteItem">
             删除
           </view>
         </view>
@@ -64,7 +64,7 @@
     </view>
 
     <view class="empty" wx:if="{{!loading && filteredItems.length === 0}}">
-      <text class="empty-text">暂无{{currentTab === 'on' ? '展示中' : '已隐藏'}}的好物</text>
+      <text class="empty-text">暂无{{currentTab === 'on' ? '展示中' : '已隐藏'}}的记录</text>
     </view>
   </view>
 
@@ -73,6 +73,8 @@
   </view>
 
   <view class="version">
-    <text>版本 1.0.0</text>
+    <text>版本 2.0.0</text>
   </view>
 </view>
+
+<canvas canvas-id="shareCanvas" class="share-canvas" style="width: 300px; height: 400px; position: fixed; left: -9999px; top: -9999px;"></canvas>

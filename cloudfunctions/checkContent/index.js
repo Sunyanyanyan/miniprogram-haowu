@@ -5,7 +5,7 @@ cloud.init({
 });
 
 exports.main = async (event, context) => {
-  const { type, content } = event;
+  const { type, content, fileID } = event;
 
   try {
     if (type === 'text') {
@@ -14,10 +14,14 @@ exports.main = async (event, context) => {
       });
       return result;
     } else if (type === 'image') {
+      const fileRes = await cloud.downloadFile({
+        fileID: fileID
+      });
+      
       const result = await cloud.openapi.security.imgSecCheck({
         media: {
-          contentType: 'image/png',
-          value: content
+          contentType: 'image/jpeg',
+          value: fileRes.fileContent
         }
       });
       return result;
