@@ -26,6 +26,8 @@ exports.main = async (event, context) => {
       return await updateItemStatus(event, openid);
     case 'delete':
       return await deleteItem(event, openid);
+    case 'getUserInfo':
+      return await getUserInfo(openid);
     default:
       return {
         errCode: -1,
@@ -34,17 +36,118 @@ exports.main = async (event, context) => {
   }
 };
 
+async function checkTextSecurity(text, fieldName) {
+  if (!text) return { pass: true };
+  try {
+    const result = await cloud.openapi.security.msgSecCheck({
+      content: text
+    });
+    return { pass: result.errCode === 0, fieldName: fieldName };
+  } catch (err) {
+    console.error('文本检测失败', err);
+    return { pass: false, errMsg: fieldName + '包含敏感内容', fieldName: fieldName };
+  }
+}
+
+async function checkImageSecurity(fileID, index) {
+  if (!fileID) return { pass: true };
+  try {
+    const fileRes = await cloud.downloadFile({
+      fileID: fileID
+    });
+    
+    const result = await cloud.openapi.security.imgSecCheck({
+      media: {
+        contentType: 'image/jpeg',
+        value: fileRes.fileContent
+      }
+    });
+    return { pass: result.errCode === 0, index: index };
+  } catch (err) {
+    console.error('图片检测失败', err);
+    return { pass: false, errMsg: '第' + (index + 1) + '张图片包含敏感内容', index: index };
+  }
+}
+
+async function checkContentSecurity(title, desc, images) {
+  const tasks = [];
+  
+  if (title) {
+    tasks.push(checkTextSecurity(title, '标题'));
+  }
+  if (desc) {
+    tasks.push(checkTextSecurity(desc, '描述'));
+  }
+  if (images && images.length > 0) {
+    for (let i = 0; i < images.length; i++) {
+      tasks.push(checkImageSecurity(images[i], i));
+    }
+  }
+  
+  const results = await Promise.all(tasks);
+  
+  for (let i = 0; i < results.length; i++) {
+    if (!results[i].pass) {
+      return { pass: false, errMsg: results[i].errMsg || '内容不合规' };
+    }
+  }
+  
+  return { pass: true };
+}
+
+async function saveUserContact(openid, contact) {
+  if (!contact) return;
+  
+  try {
+    const userRes = await db.collection('users').where({
+      _openid: openid
+    }).get();
+    
+    if (userRes.data.length > 0) {
+      await db.collection('users').doc(userRes.data[0]._id).update({
+        data: {
+          contact: contact,
+          updatedAt: db.serverDate()
+        }
+      });
+    } else {
+      await db.collection('users').add({
+        data: {
+          _openid: openid,
+          contact: contact,
+          createdAt: db.serverDate(),
+          updatedAt: db.serverDate()
+        }
+      });
+    }
+  } catch (err) {
+    console.error('保存用户信息失败', err);
+  }
+}
+
 async function createItem(event, openid) {
   const title = event.title;
   const desc = event.desc;
   const contact = event.contact;
   const images = event.images;
-  const tag = event.tag || '其它';
+  const tag = event.tag || '口粮';
   const value = event.value || 0;
   const expireAt = event.expireAt || null;
   const expireDays = event.expireDays || 365;
 
+  const securityCheck = await checkContentSecurity(title, desc, images);
+  if (!securityCheck.pass) {
+    return {
+      errCode: -1,
+      errMsg: securityCheck.errMsg || '内容不合规'
+    };
+  }
+
   try {
+    if (contact) {
+      await saveUserContact(openid, contact);
+    }
+
     const result = await db.collection('items').add({
       data: {
         _openid: openid,
@@ -211,10 +314,32 @@ async function updateItem(event, openid) {
   const expireAt = event.expireAt;
   const expireDays = event.expireDays;
 
+  console.log('updateItem params:', JSON.stringify({
+    itemId: itemId,
+    title: title,
+    desc: desc,
+    contact: contact,
+    images: images ? images.length : 0,
+    tag: tag,
+    value: value,
+    expireAt: expireAt,
+    expireDays: expireDays
+  }));
+
+  const securityCheck = await checkContentSecurity(title, desc, images);
+  if (!securityCheck.pass) {
+    console.log('securityCheck failed:', securityCheck.errMsg);
+    return {
+      errCode: -1,
+      errMsg: securityCheck.errMsg || '内容不合规'
+    };
+  }
+
   try {
     const item = await db.collection('items').doc(itemId).get();
     
     if (item.data._openid !== openid) {
+      console.log('permission denied:', item.data._openid, '!==', openid);
       return {
         errCode: -1,
         errMsg: '无权限修改'
@@ -245,11 +370,15 @@ async function updateItem(event, openid) {
       updateData.expireDays = expireDays;
     }
 
+    console.log('updateData:', JSON.stringify(updateData));
+
     const result = await db.collection('items')
       .doc(itemId)
       .update({
         data: updateData
       });
+
+    console.log('update result:', JSON.stringify(result));
 
     return {
       errCode: 0,
@@ -260,7 +389,7 @@ async function updateItem(event, openid) {
     console.error('更新失败', err);
     return {
       errCode: -1,
-      errMsg: '更新失败'
+      errMsg: '更新失败: ' + (err.message || err.errMsg || '未知错误')
     };
   }
 }
@@ -340,6 +469,34 @@ async function deleteItem(event, openid) {
     return {
       errCode: -1,
       errMsg: '删除失败'
+    };
+  }
+}
+
+async function getUserInfo(openid) {
+  try {
+    const userRes = await db.collection('users').where({
+      _openid: openid
+    }).get();
+
+    if (userRes.data.length > 0) {
+      return {
+        errCode: 0,
+        errMsg: '查询成功',
+        data: userRes.data[0]
+      };
+    } else {
+      return {
+        errCode: 0,
+        errMsg: '用户不存在',
+        data: null
+      };
+    }
+  } catch (err) {
+    console.error('查询用户信息失败', err);
+    return {
+      errCode: -1,
+      errMsg: '查询失败'
     };
   }
 }

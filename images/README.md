@@ -4,8 +4,8 @@
 
 1. `tab-home.png` - 首页图标（未选中）
 2. `tab-home-active.png` - 首页图标（选中）
-3. `tab-publish.png` - 发布图标（未选中）
-4. `tab-publish-active.png` - 发布图标（选中）
+3. `tab-add.png` - 登记图标（未选中）
+4. `tab-add-active.png` - 登记图标（选中）
 5. `tab-mine.png` - 我的图标（未选中）
 6. `tab-mine-active.png` - 我的图标（选中）
 

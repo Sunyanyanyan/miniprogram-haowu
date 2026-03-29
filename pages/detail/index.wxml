@@ -14,10 +14,10 @@
   <view class="info-section">
     <view class="title-row">
       <view class="title">{{item.title}}</view>
-      <view class="share-btn" bindtap="showShareMenu">
+      <button class="share-btn" open-type="share">
         <text class="share-icon">📤</text>
         <text class="share-text">分享</text>
-      </view>
+      </button>
     </view>
     <view class="tag-wrap" wx:if="{{item.tag}}">
       <view class="item-tag">{{item.tag}}</view>
@@ -61,15 +61,4 @@
 
 <view class="loading" wx:if="{{loading}}">
   <text>加载中...</text>
-</view>
-
-<canvas canvas-id="shareCanvas" class="share-canvas" style="width: 300px; height: 400px; position: fixed; left: -9999px; top: -9999px;"></canvas>
-
-<view class="share-modal" wx:if="{{showShareModal}}" bindtap="hideShareModal">
-  <view class="share-modal-content" catchtap="preventClose">
-    <view class="share-modal-title">分享好物</view>
-    <image class="share-preview" src="{{shareImagePath}}" mode="widthFix" wx:if="{{shareImagePath}}"></image>
-    <view class="share-modal-tip">长按图片保存到相册，可发朋友圈</view>
-    <button class="save-btn" bindtap="saveToAlbum">保存到相册</button>
-  </view>
 </view>

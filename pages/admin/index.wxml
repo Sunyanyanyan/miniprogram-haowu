@@ -62,16 +62,12 @@
     </view>
     <view class="analytics-grid">
       <view class="analytics-item">
-        <text class="analytics-label">查看联系</text>
+        <text class="analytics-label">查看信息</text>
         <text class="analytics-num">{{analytics.clicks['detail_showContact'] || 0}}</text>
       </view>
       <view class="analytics-item">
-        <text class="analytics-label">复制联系</text>
+        <text class="analytics-label">复制信息</text>
         <text class="analytics-num">{{analytics.clicks['detail_copyContact'] || 0}}</text>
-      </view>
-      <view class="analytics-item">
-        <text class="analytics-label">拨打电话</text>
-        <text class="analytics-num">{{analytics.clicks['detail_callPhone'] || 0}}</text>
       </view>
       <view class="analytics-item">
         <text class="analytics-label">反馈好物</text>

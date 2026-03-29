@@ -4,7 +4,7 @@
       <text class="search-icon">🔍</text>
       <input 
         class="search-input" 
-        placeholder="搜索闲置好物" 
+        placeholder="搜索好物" 
         value="{{keyword}}"
         bindinput="onSearchInput"
         bindconfirm="onSearchConfirm"

@@ -5,9 +5,7 @@ Page({
     showContact: false,
     isOwner: false,
     fromMine: false,
-    expireText: '',
-    showShareModal: false,
-    shareImagePath: ''
+    expireText: ''
   },
 
   onLoad(options) {
@@ -236,137 +234,20 @@ Page({
     }
   },
 
-  async showShareMenu() {
-    wx.showLoading({ title: '生成中...' });
-    
-    try {
-      const imagePath = await this.drawShareCard();
-      this.setData({
-        showShareModal: true,
-        shareImagePath: imagePath
-      });
-      wx.hideLoading();
-    } catch (err) {
-      console.error('生成分享图失败', err);
-      wx.hideLoading();
-      wx.showToast({
-        title: '生成失败',
-        icon: 'none'
-      });
-    }
-  },
-
-  hideShareModal() {
-    this.setData({ showShareModal: false });
-  },
-
-  preventClose() {},
-
-  async drawShareCard() {
-    const item = this.data.item;
-    const ctx = wx.createCanvasContext('shareCanvas');
-    const canvasWidth = 300;
-    const canvasHeight = 400;
-
-    ctx.setFillStyle('#ffffff');
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-    if (item.images && item.images.length > 0) {
-      const imageInfo = await this.getImageInfo(item.images[0]);
-      ctx.drawImage(imageInfo.path, 15, 15, 270, 180);
-    }
-
-    ctx.setFillStyle('#333333');
-    ctx.setFontSize(18);
-    const title = item.title.length > 15 ? item.title.substring(0, 15) + '...' : item.title;
-    ctx.fillText(title, 15, 225);
-
-    ctx.setFillStyle('#9B59B6');
-    ctx.setFontSize(24);
-    ctx.fillText('参考值：' + item.value, 15, 265);
-
-    if (item.tag) {
-      ctx.setFillStyle('#f5f5f5');
-      ctx.fillRect(15, 280, 80, 30);
-      ctx.setFillStyle('#666666');
-      ctx.setFontSize(14);
-      ctx.fillText(item.tag, 25, 300);
-    }
-
-    ctx.setFillStyle('#999999');
-    ctx.setFontSize(12);
-    ctx.fillText('扫码查看详情', 15, 360);
-
-    ctx.setFillStyle('#666666');
-    ctx.setFontSize(10);
-    ctx.fillText('好物墙', 15, 380);
-
-    return new Promise((resolve, reject) => {
-      wx.canvasToTempFilePath({
-        canvasId: 'shareCanvas',
-        success: (res) => resolve(res.tempFilePath),
-        fail: (err) => reject(err)
-      });
-    });
-  },
-
-  getImageInfo(fileID) {
-    return new Promise((resolve, reject) => {
-      wx.getImageInfo({
-        src: fileID,
-        success: resolve,
-        fail: reject
-      });
-    });
-  },
-
-  async saveToAlbum() {
-    try {
-      const res = await wx.saveImageToPhotosAlbum({
-        filePath: this.data.shareImagePath
-      });
-      
-      wx.showToast({
-        title: '已保存到相册',
-        icon: 'success'
-      });
-    } catch (err) {
-      if (err.errMsg.indexOf('auth deny') >= 0) {
-        wx.showModal({
-          title: '提示',
-          content: '需要授权保存图片权限',
-          success: (res) => {
-            if (res.confirm) {
-            wx.openSetting();
-            }
-          }
-        });
-      } else {
-        wx.showToast({
-          title: '保存失败',
-          icon: 'none'
-        });
-      }
-    }
-  },
-
   onShareAppMessage() {
     if (this.data.item) {
+      const shareImage = this.data.item.images && this.data.item.images.length > 0 
+        ? this.data.item.images[0] 
+        : '';
       return {
-        title: this.data.item.title,
+        title: this.data.item.title || '好物分享',
         path: '/pages/detail/index?id=' + this.itemId,
-        imageUrl: this.data.item.images[0]
+        imageUrl: shareImage
       };
     }
-  },
-
-  onShareTimeline() {
-    if (this.data.item) {
-      return {
-        title: this.data.item.title,
-        query: 'id=' + this.itemId,
-        imageUrl: this.data.item.images[0]
-      };
-    }
+    return {
+      title: '好物分享',
+      path: '/pages/home/index'
+    };
   }
 });

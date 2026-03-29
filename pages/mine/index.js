@@ -10,7 +10,8 @@ Page({
     isAdmin: false,
     currentTab: 'on',
     onCount: 0,
-    offCount: 0
+    offCount: 0,
+    isFirstShow: true
   },
 
   onLoad() {
@@ -19,9 +20,10 @@ Page({
 
   onShow() {
     wx.setNavigationBarTitle({ title: '我的' });
-    if (this.data.hasUserInfo) {
+    if (this.data.hasUserInfo && !this.data.isFirstShow) {
       this.loadMyItems();
     }
+    this.setData({ isFirstShow: false });
   },
 
   checkLogin() {
@@ -70,12 +72,15 @@ Page({
       });
 
       const items = res.result.data || [];
+      const now = Date.now();
       const formattedItems = [];
       let onCount = 0;
       let offCount = 0;
       
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
+        const isExpired = item.expireAt && item.expireAt < now;
+        const effectiveStatus = isExpired ? 'off' : item.status;
         
         formattedItems.push({
           _id: item._id,
@@ -86,12 +91,14 @@ Page({
           images: item.images,
           tag: item.tag,
           status: item.status,
+          effectiveStatus: effectiveStatus,
+          isExpired: isExpired,
           value: item.value,
           createdAt: this.formatDate(item.createdAt),
           updatedAt: this.formatDate(item.updatedAt)
         });
         
-        if (item.status === 'on') {
+        if (effectiveStatus === 'on') {
           onCount++;
         } else {
           offCount++;
@@ -99,7 +106,7 @@ Page({
       }
 
       const filteredItems = formattedItems.filter(function(item) {
-        return item.status === this.data.currentTab;
+        return item.effectiveStatus === this.data.currentTab;
       }.bind(this));
 
       this.setData({
@@ -118,7 +125,7 @@ Page({
   onTabChange(e) {
     const tab = e.currentTarget.dataset.tab;
     const filteredItems = this.data.myItems.filter(function(item) {
-      return item.status === tab;
+      return item.effectiveStatus === tab;
     });
     
     this.setData({
@@ -157,7 +164,9 @@ Page({
   async toggleStatus(e) {
     const id = e.currentTarget.dataset.id;
     const status = e.currentTarget.dataset.status;
-    const newStatus = status === 'on' ? 'off' : 'on';
+    const expired = e.currentTarget.dataset.expired;
+    const effectiveStatus = expired ? 'off' : status;
+    const newStatus = effectiveStatus === 'on' ? 'off' : 'on';
 
     try {
       await wx.cloud.callFunction({

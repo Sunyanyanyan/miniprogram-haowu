@@ -1,33 +1,38 @@
-const tags = ['全部', '母婴', '日常', '美妆', '食品', '其它'];
+const tags = ['全部', '口粮', '穿搭', '洗护', '玩趣', '妈咪'];
 
 Page({
   data: {
     items: [],
-    loading: true,
+    loading: false,
     hasMore: true,
     page: 0,
     pageSize: 10,
     error: false,
     errorMsg: '',
-    isFirstShow: true,
     tags: tags,
     currentTag: '全部',
-    keyword: ''
+    keyword: '',
+    initialized: false,
+    isLoadingMore: false
   },
 
   onLoad() {
-    this.setData({ currentTag: '全部' });
     this.loadItems();
   },
 
   onShow() {
-    if (!this.data.isFirstShow) {
-      this.refreshItems();
+    if (this.data.initialized) {
+      const app = getApp();
+      if (app.globalData.needRefreshHome) {
+        this.setData({
+          currentTag: '全部',
+          keyword: ''
+        });
+        this.refreshItems();
+        app.globalData.needRefreshHome = false;
+      }
     }
-
-    this.setData({
-      isFirstShow: false
-    });
+    this.setData({ initialized: true });
   },
 
   async refreshItems() {
@@ -35,7 +40,8 @@ Page({
       items: [],
       page: 0,
       hasMore: true,
-      error: false
+      error: false,
+      isLoadingMore: false
     });
     await this.loadItems();
   },
@@ -45,11 +51,11 @@ Page({
       return;
     }
 
-    if (this.data.loading && this.data.items.length > 0) {
+    if (this.data.isLoadingMore) {
       return;
     }
 
-    this.setData({ loading: true, error: false });
+    this.setData({ loading: true, error: false, isLoadingMore: true });
 
     try {
       const res = await wx.cloud.callFunction({
@@ -70,8 +76,9 @@ Page({
         
         const formattedItems = newItems.map(item => {
           const createdAt = item.createdAt ? new Date(item.createdAt).getTime() : now;
-          const isExpired = item.expireAt && item.expireAt < now;
-          const isUrgent = !isExpired && (now - createdAt) < 30 * 60 * 1000;
+          const expireAt = item.expireAt ? (typeof item.expireAt === 'number' ? item.expireAt : new Date(item.expireAt).getTime()) : null;
+          const isExpired = expireAt && expireAt < now;
+          const isUrgent = !isExpired && expireAt && (expireAt - now) < 30 * 60 * 1000;
           
           return {
             _id: item._id,
@@ -90,11 +97,15 @@ Page({
           };
         });
         
+        const existingIds = new Set(this.data.items.map(item => item._id));
+        const uniqueNewItems = formattedItems.filter(item => !existingIds.has(item._id));
+        
         this.setData({
-          items: this.data.items.concat(formattedItems),
+          items: this.data.items.concat(uniqueNewItems),
           loading: false,
           hasMore: hasMore,
-          page: this.data.page + 1
+          page: this.data.page + 1,
+          isLoadingMore: false
         });
       } else {
         throw new Error('云函数调用失败');
@@ -112,7 +123,8 @@ Page({
       this.setData({ 
         loading: false,
         error: true,
-        errorMsg: errorMsg
+        errorMsg: errorMsg,
+        isLoadingMore: false
       });
       
       wx.showToast({
@@ -207,6 +219,7 @@ Page({
     
     this.setData({
       currentTag: tag,
+      keyword: '',
       items: [],
       page: 0,
       hasMore: true

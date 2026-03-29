@@ -1,10 +1,10 @@
-const tags = ['母婴', '日常', '美妆', '食品', '其它'];
+const tags = ['口粮', '穿搭', '洗护', '玩趣', '妈咪'];
 
 const expireOptions = [
   { label: '30分钟', value: 0.5/24 },
+  { label: '1小时', value: 1/24 },
   { label: '1天', value: 1 },
-  { label: '7天', value: 7 },
-  { label: '1个月', value: 30 },
+  { label: '1月', value: 30 },
   { label: '1年', value: 365 }
 ];
 
@@ -23,18 +23,61 @@ Page({
     submitting: false,
     isFirstShow: true,
     loading: false,
-    showTagModal: false
+    showTagModal: false,
+    uploading: false,
+    showContactHistory: false,
+    contactHistory: ''
   },
 
   onLoad(options) {
     this.setData({ isFirstShow: true });
     wx.setNavigationBarTitle({ title: '录入信息' });
+    this.loadUserContact();
+  },
+
+  async loadUserContact() {
+    const cachedContact = wx.getStorageSync('userContact');
+    if (cachedContact) {
+      this.setData({ contactHistory: cachedContact });
+      return;
+    }
+
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'item',
+        data: { action: 'getUserInfo' }
+      });
+
+      if (res.result && res.result.errCode === 0 && res.result.data && res.result.data.contact) {
+        this.setData({ contactHistory: res.result.data.contact });
+        wx.setStorageSync('userContact', res.result.data.contact);
+      }
+    } catch (err) {
+      console.error('获取用户信息失败', err);
+    }
+  },
+
+  onContactFocus() {
+    if (this.data.contactHistory) {
+      this.setData({ showContactHistory: true });
+    }
+  },
+
+  onContactBlur() {
+    const that = this;
+    setTimeout(function() {
+      that.setData({ showContactHistory: false });
+    }, 200);
+  },
+
+  selectContactHistory() {
+    this.setData({
+      contact: this.data.contactHistory,
+      showContactHistory: false
+    });
   },
 
   onShow() {
-    if (!this.data.isFirstShow) {
-      this.resetForm();
-    }
     this.setData({ isFirstShow: false });
   },
 
@@ -48,7 +91,8 @@ Page({
       tagIndex: -1,
       value: '',
       expireIndex: 4,
-      submitting: false
+      submitting: false,
+      uploading: false
     });
   },
 
@@ -118,6 +162,11 @@ Page({
   },
 
   chooseImage() {
+    if (this.data.uploading) {
+      wx.showToast({ title: '正在上传中...', icon: 'none' });
+      return;
+    }
+
     const currentCount = this.data.images.length;
     
     if (currentCount >= 3) {
@@ -148,6 +197,7 @@ Page({
           return;
         }
         
+        that.setData({ uploading: true });
         wx.showLoading({ title: '上传中...' });
 
         that.uploadImages(tempFiles, 0, that);
@@ -158,6 +208,7 @@ Page({
   async uploadImages(files, index, that) {
     if (index >= files.length || that.data.images.length >= 3) {
       wx.hideLoading();
+      that.setData({ uploading: false });
       wx.showToast({
         title: '上传成功',
         icon: 'success',
@@ -167,7 +218,9 @@ Page({
     }
 
     const filePath = files[index].tempFilePath;
-    const cloudPath = 'items/' + Date.now() + '-' + Math.random().toString(36).substr(2) + '.jpg';
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substr(2, 8);
+    const cloudPath = 'items/' + timestamp + '_' + randomStr + '_' + index + '.jpg';
     
     let uploadPath = filePath;
     try {
@@ -200,12 +253,12 @@ Page({
       that.uploadImages(files, index + 1, that);
     } catch (err) {
       console.error('上传失败', err);
-      wx.hideLoading();
       wx.showToast({
-        title: '上传失败',
+        title: '第' + (index + 1) + '张图片上传失败',
         icon: 'none',
         duration: 2000
       });
+      that.uploadImages(files, index + 1, that);
     }
   },
 
@@ -295,10 +348,15 @@ Page({
       this.setData({ submitting: false });
       
       if (res.result && res.result.errCode === 0) {
+        if (this.data.contact) {
+          wx.setStorageSync('userContact', this.data.contact);
+          this.setData({ contactHistory: this.data.contact });
+        }
         wx.showToast({ title: '录入成功', icon: 'success' });
         setTimeout(() => {
           this.resetForm();
-          this.setData({ isFirstShow: true });
+          const app = getApp();
+          app.globalData.needRefreshHome = true;
           wx.switchTab({ url: '/pages/home/index' });
         }, 1500);
       } else {

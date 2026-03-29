@@ -150,7 +150,7 @@
   margin-top: 8rpx;
 }
 
-.item-type {
+.item-value {
   display: inline-block;
   padding: 4rpx 12rpx;
   background-color: #F8F0FB;

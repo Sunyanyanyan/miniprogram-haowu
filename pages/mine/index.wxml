@@ -49,12 +49,13 @@
             编辑
           </view>
           <view 
-            class="action-btn {{item.status === 'off' ? 'on-btn' : 'off-btn'}}" 
+            class="action-btn {{item.effectiveStatus === 'off' ? 'on-btn' : 'off-btn'}}" 
             data-id="{{item._id}}" 
             data-status="{{item.status}}"
+            data-expired="{{item.isExpired}}"
             catchtap="toggleStatus"
           >
-            {{item.status === 'off' ? '展示' : '隐藏'}}
+            {{item.effectiveStatus === 'off' ? '展示' : '隐藏'}}
           </view>
           <view class="action-btn delete" data-id="{{item._id}}" catchtap="deleteItem">
             删除
