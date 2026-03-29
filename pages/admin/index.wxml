@@ -40,56 +40,6 @@
     </view>
   </view>
 
-  <view class="analytics-section">
-    <view class="section-title">用户行为统计</view>
-    <view class="analytics-grid">
-      <view class="analytics-item">
-        <text class="analytics-label">登录点击</text>
-        <text class="analytics-num">{{analytics.clicks['mine_login'] || 0}}</text>
-      </view>
-      <view class="analytics-item">
-        <text class="analytics-label">登记提交</text>
-        <text class="analytics-num">{{analytics.clicks['add_submit'] || 0}}</text>
-      </view>
-      <view class="analytics-item">
-        <text class="analytics-label">上传图片</text>
-        <text class="analytics-num">{{analytics.clicks['add_chooseImage'] || 0}}</text>
-      </view>
-      <view class="analytics-item">
-        <text class="analytics-label">编辑好物</text>
-        <text class="analytics-num">{{analytics.clicks['mine_edit'] || 0}}</text>
-      </view>
-    </view>
-    <view class="analytics-grid">
-      <view class="analytics-item">
-        <text class="analytics-label">查看信息</text>
-        <text class="analytics-num">{{analytics.clicks['detail_showContact'] || 0}}</text>
-      </view>
-      <view class="analytics-item">
-        <text class="analytics-label">复制信息</text>
-        <text class="analytics-num">{{analytics.clicks['detail_copyContact'] || 0}}</text>
-      </view>
-      <view class="analytics-item">
-        <text class="analytics-label">反馈好物</text>
-        <text class="analytics-num">{{analytics.clicks['detail_report'] || 0}}</text>
-      </view>
-    </view>
-    <view class="analytics-grid">
-      <view class="analytics-item">
-        <text class="analytics-label">下拉刷新</text>
-        <text class="analytics-num">{{analytics.clicks['home_pullDownRefresh'] || 0}}</text>
-      </view>
-      <view class="analytics-item">
-        <text class="analytics-label">上拉加载</text>
-        <text class="analytics-num">{{analytics.clicks['home_loadMore'] || 0}}</text>
-      </view>
-      <view class="analytics-item">
-        <text class="analytics-label">图片预览</text>
-        <text class="analytics-num">{{analytics.clicks['detail_previewImage'] || 0}}</text>
-      </view>
-    </view>
-  </view>
-
   <view class="items-section">
     <view class="section-title">所有好物</view>
 

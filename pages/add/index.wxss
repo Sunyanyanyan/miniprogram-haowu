@@ -356,14 +356,14 @@
   display: flex;
   flex-direction: column;
   gap: 8rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.contact-history-item:last-child {
+  border-bottom: none;
 }
 
 .contact-history-text {
   font-size: 28rpx;
   color: #333;
-}
-
-.contact-history-tip {
-  font-size: 22rpx;
-  color: #9B59B6;
 }

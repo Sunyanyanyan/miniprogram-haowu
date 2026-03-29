@@ -1,0 +1,12 @@
+<view class="privacy-mask" wx:if="{{showPrivacy}}">
+  <view class="privacy-content">
+    <view class="privacy-title">用户隐私保护提示</view>
+    <view class="privacy-desc">
+      感谢您使用好物看板。在使用头像昵称填写功能前，我们需要获取您的同意。
+    </view>
+    <view class="privacy-btns">
+      <button class="privacy-btn reject" bindtap="handleDisagree">拒绝</button>
+      <button class="privacy-btn agree" id="agree-btn" open-type="agreePrivacyAuthorization" bindagreeprivacyauthorization="handleAgree">同意</button>
+    </view>
+  </view>
+</view>

@@ -43,12 +43,14 @@
   },
   "requiredPrivateInfos": ["chooseAddress"],
   "lazyCodeLoading": "requiredComponents",
+  "__usePrivacyCheck__": true,
   "usingComponents": {
     "van-card": "miniprogram_npm/vant/lib/card/index",
     "van-button": "miniprogram_npm/vant/lib/button/index",
     "van-search": "miniprogram_npm/vant/lib/search/index",
     "van-tab": "miniprogram_npm/vant/lib/tab/index",
-    "van-tabs": "miniprogram_npm/vant/lib/tabs/index"
+    "van-tabs": "miniprogram_npm/vant/lib/tabs/index",
+    "privacy": "/components/privacy/index"
   },
   "window": {
     "backgroundTextStyle": "light",

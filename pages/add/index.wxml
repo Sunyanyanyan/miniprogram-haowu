@@ -93,10 +93,15 @@
           <text class="label-required">*</text>
         </view>
         <view class="contact-input-wrapper">
-          <view class="contact-history-dropdown" wx:if="{{showContactHistory && contactHistory}}">
-            <view class="contact-history-item" bindtap="selectContactHistory">
-              <text class="contact-history-text">{{contactHistory}}</text>
-              <text class="contact-history-tip">点击使用历史记录</text>
+          <view class="contact-history-dropdown" wx:if="{{showContactHistory && contactHistory.length > 0}}">
+            <view 
+              class="contact-history-item" 
+              wx:for="{{contactHistory}}" 
+              wx:key="*this"
+              data-contact="{{item}}"
+              bindtap="selectContactHistory"
+            >
+              <text class="contact-history-text">{{item}}</text>
             </view>
           </view>
           <input 

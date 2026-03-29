@@ -14,10 +14,7 @@
   <view class="info-section">
     <view class="title-row">
       <view class="title">{{item.title}}</view>
-      <button class="share-btn" open-type="share">
-        <text class="share-icon">📤</text>
-        <text class="share-text">分享</text>
-      </button>
+      <button class="share-btn" open-type="share">分享</button>
     </view>
     <view class="tag-wrap" wx:if="{{item.tag}}">
       <view class="item-tag">{{item.tag}}</view>

@@ -10,7 +10,6 @@ Page({
     },
     analytics: {
       pageViews: {},
-      clicks: {},
       totalRecords: 0
     }
   },
@@ -34,7 +33,6 @@ Page({
         this.setData({
           analytics: {
             pageViews: res.result.data.pageViewStats || {},
-            clicks: res.result.data.clickStats || {},
             totalRecords: res.result.data.totalRecords || 0
           }
         });

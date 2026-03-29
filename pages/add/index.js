@@ -26,7 +26,7 @@ Page({
     showTagModal: false,
     uploading: false,
     showContactHistory: false,
-    contactHistory: ''
+    contactHistory: []
   },
 
   onLoad(options) {
@@ -36,9 +36,9 @@ Page({
   },
 
   async loadUserContact() {
-    const cachedContact = wx.getStorageSync('userContact');
-    if (cachedContact) {
-      this.setData({ contactHistory: cachedContact });
+    const cachedContacts = wx.getStorageSync('userContactHistory');
+    if (cachedContacts && cachedContacts.length > 0) {
+      this.setData({ contactHistory: cachedContacts });
       return;
     }
 
@@ -49,8 +49,9 @@ Page({
       });
 
       if (res.result && res.result.errCode === 0 && res.result.data && res.result.data.contact) {
-        this.setData({ contactHistory: res.result.data.contact });
-        wx.setStorageSync('userContact', res.result.data.contact);
+        const history = [res.result.data.contact];
+        this.setData({ contactHistory: history });
+        wx.setStorageSync('userContactHistory', history);
       }
     } catch (err) {
       console.error('获取用户信息失败', err);
@@ -58,7 +59,7 @@ Page({
   },
 
   onContactFocus() {
-    if (this.data.contactHistory) {
+    if (this.data.contactHistory.length > 0) {
       this.setData({ showContactHistory: true });
     }
   },
@@ -70,9 +71,10 @@ Page({
     }, 200);
   },
 
-  selectContactHistory() {
+  selectContactHistory(e) {
+    const contact = e.currentTarget.dataset.contact;
     this.setData({
-      contact: this.data.contactHistory,
+      contact: contact,
       showContactHistory: false
     });
   },
@@ -349,8 +351,16 @@ Page({
       
       if (res.result && res.result.errCode === 0) {
         if (this.data.contact) {
-          wx.setStorageSync('userContact', this.data.contact);
-          this.setData({ contactHistory: this.data.contact });
+          let history = wx.getStorageSync('userContactHistory') || [];
+          history = history.filter(function(item) {
+            return item !== this.data.contact;
+          }.bind(this));
+          history.unshift(this.data.contact);
+          if (history.length > 3) {
+            history = history.slice(0, 3);
+          }
+          wx.setStorageSync('userContactHistory', history);
+          this.setData({ contactHistory: history });
         }
         wx.showToast({ title: '录入成功', icon: 'success' });
         setTimeout(() => {
